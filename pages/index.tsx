@@ -7,6 +7,7 @@ import { DiffList } from '../components/Diffs'
 import RangeSlider from '../components/RangeSlider';
 import {
   unifiedFetcher, ddnFetcher, getNewDatasetsQuery,
+  getDeletedDatasetsQuery,
   filterUseableTags, type SocrataTagsGQL, SocrataRepoTagsQuery,
   buildQuery, buildValues
 } from '../data/index'
