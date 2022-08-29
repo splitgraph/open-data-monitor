@@ -1,0 +1,77 @@
+import { useState } from 'react'
+import styles from '../styles/Home.module.css'
+
+interface DiffItem {
+  permalink: string;
+  desc: string;
+  id: string;
+  name: string;
+  updated_at: string;
+  created_at: string;
+  domain: string;
+}
+
+// Render a diff
+export const DiffItem = ({ permalink, desc, name, updated_at, created_at, domain }: DiffItem) => {
+  const [fullDesc, setFullDesc] = useState(false);
+  return (
+    <div className={styles.card}>
+      <h2>{name}</h2>
+      <br />
+      {desc &&
+        <>
+          <p style={{
+            display: '-webkit-box',
+            fontSize: '12px',
+            ...(!fullDesc && {
+              overflow: 'hidden',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: '4'
+            })
+
+          }}>
+            {desc}
+          </p>
+          <button onClick={() => setFullDesc(!fullDesc)}>...</button>
+        </>
+      }
+      <br />
+      <p>{domain}</p>
+      <br />
+      Updated {updated_at}
+      <br />
+      Created {created_at}
+      <br />
+      <br />
+      <a href={permalink} target="_new">🔗</a>
+    </div >
+  )
+}
+
+
+interface FeedEntriesProps {
+  data: any;
+  error: any;
+}
+export const DiffList = ({ data, error, }: FeedEntriesProps) => {
+  // TODO: consider introducing a list view for 'big' results
+  // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  if (error) {
+    return <h3>Sorry, something went wrong</h3>
+  }
+
+  return (
+    <div className={styles.grid}>
+      {
+        data ?
+          cleanupData(data).length
+            ? cleanupData(data).map((e: DiffItem) => <DiffItem key={e.id} {...e} />)
+            : <h3>No records found. Try adjusting the dates</h3>
+          : <p>loading...</p>
+      }
+    </div>
+  )
+}
+
+const cleanupData = (data: any) => data?.success ? [...data.rows] : [];
