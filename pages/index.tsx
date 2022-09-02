@@ -32,7 +32,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
         <h2 className={styles.title}>SocFeed</h2>
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
-          {tags?.length &&
+          {!!tags?.length &&
             <RangeSlider values={rangeValues} setValues={setRangeValues}
               tags={tags} min={Number(tags[tags.length - 1])} max={Number(tags[0])}
               className={styles.rangeSlider}
