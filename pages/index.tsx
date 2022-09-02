@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { NextPage } from 'next'
+import type { NextPage, GetServerSideProps } from 'next'
+
 import useSWR, { SWRConfig } from 'swr'
 import styles from '../styles/Home.module.css'
 import { HeadTag } from '../components/HeadTag'
@@ -64,7 +65,11 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   )
 }
 
-export async function getServerSideProps({ query }) {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+  const { begin, end } = query;
+  const strBegin = typeof begin === 'string' ? begin : begin?.join('');
+  const strEnd = typeof end === 'string' ? end : end?.join('');
+
   // get all tags
   const rawTagsData = await unifiedFetcher(SocrataRepoTagsQuery)
 
@@ -77,8 +82,8 @@ export async function getServerSideProps({ query }) {
   let addedDatasetsQuery = '';
   let deletedDatasetsQuery = '';
   if (nodes.length > 1) {
-    addedDatasetsQuery = getAddedDatasetsQuery(useableTags[0], useableTags[1]);
-    deletedDatasetsQuery = getDeletedDatasetsQuery(useableTags[0], useableTags[1]);
+    addedDatasetsQuery = getAddedDatasetsQuery(strBegin || useableTags[0], strEnd || useableTags[1]);
+    deletedDatasetsQuery = getDeletedDatasetsQuery(strBegin || useableTags[0], strEnd || useableTags[1]);
   }
 
   const addedDatasets = addedDatasetsQuery && await ddnFetcher(addedDatasetsQuery)
