@@ -13,6 +13,11 @@ export interface SocrataTagsGQL {
   }
 }
 
+/**
+ * Fetch all available tags
+ * 
+ * Used to populate the UI (i.e. date picker) with only available dates.
+ */
 export const SocrataRepoTagsQuery = gql`
 query SocrataRepoTags {
   tags(
@@ -32,7 +37,7 @@ export const unifiedFetcher = (query: string) => request(UNIFIED_GQL_API, query)
  * does not. Thus filter for 'day' tags
  */
 export const filterUseableTags = (nodes: Tag[]): string[] => {
-  return nodes.map(({ tag }) => tag).filter((n: string) => n.length === 8)
+  return nodes.map(({ tag }) => tag) //.filter((n: string) => n.length === 8)
 }
 
 /**
@@ -45,8 +50,8 @@ export const filterUseableTags = (nodes: Tag[]): string[] => {
  * @param {string} newTag the "new" tag
  * @returns {string} SQL query intended for DDN
  */
-export const getNewDatasetsQuery = (oldTag: string, newTag: string) => `
-SELECT
+export const getAddedDatasetsQuery = (oldTag: string, newTag: string) =>
+  `SELECT
   new.domain AS domain,
   new.id AS id,
   new.name AS name,
@@ -61,8 +66,7 @@ RIGHT JOIN
 ON
   old.id = new.id
 WHERE
-  old.id IS NOT DISTINCT FROM NULL
-`
+  old.id IS NOT DISTINCT FROM NULL`
 
 // export const getNewDatasetsQuery2 = (oldTag: string, newTag: string) => `
 // SELECT 
@@ -82,14 +86,14 @@ WHERE
  * Return a SQL query that shows datasets deleted from Socrata during the given
  * time range (i.e. between the specified tags)
  * 
- * Inspired by https://www.splitgraph.com/docs/query/time-travel-queries
+ * Via https://mattermost.splitgraph.io/splitgraph-core/pl/d497yyxubpdstkqzs4f5a4f36y
  *
  * @param {string} oldTag the "old" tag
  * @param {string} newTag the "new" tag
  * @returns {string} SQL query intended for DDN
  */
-export const getDeletedDatasetsQuery = (oldTag: string, newTag: string) => `
-SELECT
+export const getDeletedDatasetsQuery = (oldTag: string, newTag: string) =>
+  `SELECT
     distinct old.domain AS domain
 FROM
     "splitgraph/socrata:${oldTag}".datasets old
@@ -98,8 +102,7 @@ LEFT JOIN
 ON
     old.domain = new.domain
 WHERE
-  new.domain is null
-`
+  new.domain is null`
 
 export const ddnFetcher = (query: string) => fetch(DDN_API, {
   method: "POST",
@@ -111,9 +114,14 @@ export const ddnFetcher = (query: string) => fetch(DDN_API, {
   })
 }).then((res) => res.json());
 
-export const buildQuery = (rawTagsData: SocrataTagsGQL, leftIndex: number, rightIndex: number): string => {
+export const buildAddedDatasetsQuery = (rawTagsData: SocrataTagsGQL, leftIndex: number, rightIndex: number): string => {
   const tags = buildValues(rawTagsData);
-  return getNewDatasetsQuery(tags[leftIndex], tags[rightIndex])
+  return getAddedDatasetsQuery(tags[leftIndex], tags[rightIndex])
+}
+
+export const buildDeletedDatasetsQuery = (rawTagsData: SocrataTagsGQL, leftIndex: number, rightIndex: number): string => {
+  const tags = buildValues(rawTagsData);
+  return getDeletedDatasetsQuery(tags[leftIndex], tags[rightIndex])
 }
 
 export const buildValues = (rawTagsData: SocrataTagsGQL | undefined): string[] => {

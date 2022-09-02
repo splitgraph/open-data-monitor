@@ -6,20 +6,25 @@ import { HeadTag } from '../components/HeadTag'
 import { DiffList } from '../components/Diffs'
 import RangeSlider from '../components/RangeSlider';
 import {
-  unifiedFetcher, ddnFetcher, getNewDatasetsQuery,
+  unifiedFetcher, ddnFetcher, getAddedDatasetsQuery,
   getDeletedDatasetsQuery,
   filterUseableTags, type SocrataTagsGQL, SocrataRepoTagsQuery,
-  buildQuery, buildValues
+  buildAddedDatasetsQuery, buildDeletedDatasetsQuery, buildValues
 } from '../data/index'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const [rangeValues, setRangeValues] = useState([3, 6]);
   const { data: rawTagsData, error: tagsError } = useSWR<SocrataTagsGQL>(SocrataRepoTagsQuery, unifiedFetcher)
   const [tags, setTags] = useState<string[]>();
-  const { data: newDatasetsData, error: diffError } = useSWR(rawTagsData
-    ? buildQuery(rawTagsData, rangeValues[0], rangeValues[1])
+  const { data: newDatasetsData, error: newDatasetsError } = useSWR(rawTagsData
+    ? buildAddedDatasetsQuery(rawTagsData, rangeValues[0], rangeValues[1])
     : null,
     ddnFetcher)
+  const { data: deletedDatasetsData, error: deletedDatasetsError } = useSWR(rawTagsData
+    ? buildAddedDatasetsQuery(rawTagsData, rangeValues[0], rangeValues[1])
+    : null,
+    ddnFetcher)
+  console.log({ deletedDatasetsData })
 
   useEffect(() => {
     setTags(buildValues(rawTagsData))
@@ -41,9 +46,15 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
           <div style={{ textAlign: 'right' }}>
             {newDatasetsData && <p><em>{newDatasetsData.rowCount} results</em></p>}
           </div>
-          <DiffList data={newDatasetsData} error={diffError} />
+          <h4>Added</h4>
+          <DiffList data={newDatasetsData} error={newDatasetsError} />
+          <h4>Deleted</h4>
+          <DiffList data={deletedDatasetsData} error={deletedDatasetsError} />
         </main>
       </SWRConfig>
+      {/* <pre>
+        {JSON.stringify(fallback, null, 2)}
+      </pre> */}
       <footer className={styles.footer}>
         <a href="https://www.splitgraph.com" target="_blank" rel="noopener noreferrer">
           Powered by Splitgraph
@@ -53,7 +64,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   )
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ query }) {
   // get all tags
   const rawTagsData = await unifiedFetcher(SocrataRepoTagsQuery)
 
@@ -63,18 +74,22 @@ export async function getServerSideProps() {
   // I observed the SQL query diffs only certain tags - filter accordingly
   const useableTags = filterUseableTags(nodes);
 
-  let query = '';
+  let addedDatasetsQuery = '';
+  let deletedDatasetsQuery = '';
   if (nodes.length > 1) {
-    query = getNewDatasetsQuery(useableTags[0], useableTags[1]);
+    addedDatasetsQuery = getAddedDatasetsQuery(useableTags[0], useableTags[1]);
+    deletedDatasetsQuery = getDeletedDatasetsQuery(useableTags[0], useableTags[1]);
   }
 
-  const diffData = query && await ddnFetcher(query)
+  const addedDatasets = addedDatasetsQuery && await ddnFetcher(addedDatasetsQuery)
+  const deletedDatasets = deletedDatasetsQuery && await ddnFetcher(deletedDatasetsQuery)
 
   return {
     props: {
       fallback: {
         [SocrataRepoTagsQuery]: useableTags,
-        ...{ [query]: diffData }
+        ...{ [addedDatasetsQuery]: addedDatasets },
+        ...{ [deletedDatasetsQuery]: deletedDatasets }
       }
     }
   }
