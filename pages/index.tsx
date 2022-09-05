@@ -1,35 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
-
-import useSWR, { SWRConfig } from 'swr'
+import { useRouter } from 'next/router'
+import { SWRConfig } from 'swr'
 import styles from '../styles/Home.module.css'
 import { HeadTag } from '../components/HeadTag'
 import { DiffList } from '../components/Diffs'
 import RangeSlider from '../components/RangeSlider';
 import {
-  unifiedFetcher, ddnFetcher, getAddedDatasetsQuery,
-  getDeletedDatasetsQuery,
-  filterUseableTags, type SocrataTagsGQL, SocrataRepoTagsQuery,
-  buildAddedDatasetsQuery, buildDeletedDatasetsQuery, buildValues
+  unifiedFetcher, ddnFetcher, getAddedDatasetsQuery, getDeletedDatasetsQuery,
+  filterUseableTags, SocrataRepoTagsQuery,
 } from '../data/index'
 
-const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
-  const [rangeValues, setRangeValues] = useState([3, 6]);
-  const { data: rawTagsData, error: tagsError } = useSWR<SocrataTagsGQL>(SocrataRepoTagsQuery, unifiedFetcher)
-  const [tags, setTags] = useState<string[]>();
-  const { data: newDatasetsData, error: newDatasetsError } = useSWR(rawTagsData
-    ? buildAddedDatasetsQuery(rawTagsData, rangeValues[0], rangeValues[1])
-    : null,
-    ddnFetcher)
-  const { data: deletedDatasetsData, error: deletedDatasetsError } = useSWR(rawTagsData
-    ? buildAddedDatasetsQuery(rawTagsData, rangeValues[0], rangeValues[1])
-    : null,
-    ddnFetcher)
-  console.log({ deletedDatasetsData })
+import useTags from '../useTags'
+import useDatasets from '../useDatasets'
 
-  useEffect(() => {
-    setTags(buildValues(rawTagsData))
-  }, [rawTagsData])
+const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
+  const { query: { begin, end }, replace } = useRouter();
+  const [rangeValues, setRangeValues] = useState([3, 6]);
+  const { tags, tagsError } = useTags();
+  const { added, addedError, deleted, deletedError } = useDatasets(tags, rangeValues)
 
   return (
     <div className={styles.container}>
@@ -45,12 +34,13 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
             />
           }
           <div style={{ textAlign: 'right' }}>
-            {newDatasetsData && <p><em>{newDatasetsData.rowCount} results</em></p>}
+            {!!added?.length && <p><em>{added.length} results</em></p>}
           </div>
           <h4>Added</h4>
-          <DiffList data={newDatasetsData} error={newDatasetsError} />
+          <DiffList data={added} error={addedError} />
           <h4>Deleted</h4>
-          <DiffList data={deletedDatasetsData} error={deletedDatasetsError} />
+          {deletedError && <h3>Error querying deleted datasets</h3>}
+          {pluckDDNSuccess(deleted)?.map(({ domain }, index) => <div key={index}>{domain}</div>)}
         </main>
       </SWRConfig>
       {/* <pre>
@@ -101,3 +91,6 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 }
 
 export default Home
+
+
+export const pluckDDNSuccess = (data: any) => data?.success ? [...data.rows] : [];

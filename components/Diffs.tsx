@@ -65,8 +65,8 @@ export const DiffList = ({ data, error, }: FeedEntriesProps) => {
     <div className={styles.grid}>
       {
         data ?
-          cleanupData(data).length
-            ? cleanupData(data).map((e: DiffItem) => <DiffItem key={e.id} {...e} />)
+          pluckDDNSuccess(data).length
+            ? pluckDDNSuccess(data).map((e: DiffItem) => <DiffItem key={e.id} {...e} />)
             : <h3>No records found. Try adjusting the dates</h3>
           : <p>loading...</p>
       }
@@ -74,4 +74,4 @@ export const DiffList = ({ data, error, }: FeedEntriesProps) => {
   )
 }
 
-const cleanupData = (data: any) => data?.success ? [...data.rows] : [];
+export const pluckDDNSuccess = (data: any) => data?.success ? [...data.rows] : [];

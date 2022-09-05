@@ -114,13 +114,11 @@ export const ddnFetcher = (query: string) => fetch(DDN_API, {
   })
 }).then((res) => res.json());
 
-export const buildAddedDatasetsQuery = (rawTagsData: SocrataTagsGQL, leftIndex: number, rightIndex: number): string => {
-  const tags = buildValues(rawTagsData);
+export const buildAddedDatasetsQuery = (tags: string[], leftIndex: number, rightIndex: number): string => {
   return getAddedDatasetsQuery(tags[leftIndex], tags[rightIndex])
 }
 
-export const buildDeletedDatasetsQuery = (rawTagsData: SocrataTagsGQL, leftIndex: number, rightIndex: number): string => {
-  const tags = buildValues(rawTagsData);
+export const buildDeletedDatasetsQuery = (tags: string[], leftIndex: number, rightIndex: number): string => {
   return getDeletedDatasetsQuery(tags[leftIndex], tags[rightIndex])
 }
 
