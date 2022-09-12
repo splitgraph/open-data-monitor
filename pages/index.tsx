@@ -1,38 +1,104 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
-import { useRouter } from 'next/router'
+import Router, { useRouter, type NextRouter } from 'next/router'
 import { SWRConfig } from 'swr'
+import { parse } from 'date-fns'
 import styles from '../styles/Home.module.css'
 import { HeadTag } from '../components/HeadTag'
 import { DiffList } from '../components/Diffs'
-import RangeSlider from '../components/RangeSlider';
 import {
-  unifiedFetcher, ddnFetcher, getAddedDatasetsQuery, getDeletedDatasetsQuery,
-  filterUseableTags, SocrataRepoTagsQuery,
+  unifiedFetcher, filterUseableTags, SocrataRepoTagsQuery,
 } from '../data/index'
+import SocfeedCalendar from '../components/Calendar'
 
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
 
+type SocFeedDate = 'begin' | 'end';
+
+const parseDate = (date: string) => {
+  console.log({ date })
+  if (date.length === 8) {
+    return parse(date, 'yyyyMMdd', new Date())
+  } else if (date.length === 15) {
+    return parse(date, 'yyyyMMdd-HHmmss', new Date())
+  }
+
+  throw Error('unexpected date length, could not parse')
+}
+
+const initializeDates = (tags: string[], router: NextRouter) => {
+  const sorted = tags.sort();
+  const { begin, end } = router.query;
+  if (begin && end && tags.includes(begin) && tags.includes(end)) {
+    return;
+  } else {
+    const begin = sorted[0]
+    const end = sorted[sorted.length - 1]
+
+    const newQueryParams = {
+      ...router.query,
+      begin,
+      end
+    }
+    router.replace({
+      pathname: Router.pathname,
+      query: newQueryParams,
+    });
+  }
+}
+
+const setDate = (whichDate: SocFeedDate, tag: string) => {
+  const newQueryParameters = {
+    ...Router.query,
+    [whichDate]: tag
+  }
+  Router.replace({
+    pathname: Router.pathname,
+    query: newQueryParameters,
+  });
+}
+
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
-  const { query: { begin, end }, replace } = useRouter();
-  const [rangeValues, setRangeValues] = useState([3, 6]);
+  const router = useRouter();
+  const { begin, end } = router.query;
   const { tags, tagsError } = useTags();
-  const { added, addedError, deleted, deletedError } = useDatasets(tags, rangeValues)
+  // useEffect(() => {
+  //   if (tags?.length) {
+  //     initializeDates(tags) // initialize (and validate) query params
+  //   }
+  // }, [tags])
+  const { added, addedError, deleted, deletedError } = useDatasets({
+    tags, begin: router.query.begin, end: router.query.end
+  })
 
   return (
     <div className={styles.container}>
       <HeadTag />
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
+        <h4 className={styles.description}>Discover interesting changes</h4>
+        <button onClick={() => { initializeDates(tags, router) }}>click</button>
+        <pre>{begin.toString()}</pre>
+        <pre>{end.toString()}</pre>
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
-          {!!tags?.length &&
-            <RangeSlider values={rangeValues} setValues={setRangeValues}
-              tags={tags} min={Number(tags[tags.length - 1])} max={Number(tags[0])}
-              className={styles.rangeSlider}
-            />
-          }
+          <div className={styles.calendars}>
+            {!!tags?.length && !!begin && !!end &&
+              <>
+                <SocfeedCalendar
+                  date={parseDate(begin)}
+                  setDate={(date: string) => setDate('begin', date)}
+                  tags={tags}
+                />
+                <SocfeedCalendar
+                  date={parseDate(end)}
+                  setDate={(date: string) => setDate('end', date)}
+                  tags={tags}
+                />
+              </>
+            }
+          </div>
           <div style={{ textAlign: 'right' }}>
             {!!added?.length && <p><em>{added.length} results</em></p>}
           </div>
@@ -56,41 +122,21 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { begin, end } = query;
-  const strBegin = typeof begin === 'string' ? begin : begin?.join('');
-  const strEnd = typeof end === 'string' ? end : end?.join('');
-
-  // get all tags
+  // SSR fetch of all tags - always needed & independent of user-provided values
   const rawTagsData = await unifiedFetcher(SocrataRepoTagsQuery)
 
   // pluck `data.tags.nodes`
   const { tags: { nodes } } = rawTagsData;
 
-  // I observed the SQL query diffs only certain tags - filter accordingly
-  const useableTags = filterUseableTags(nodes);
-
-  let addedDatasetsQuery = '';
-  let deletedDatasetsQuery = '';
-  if (nodes.length > 1) {
-    addedDatasetsQuery = getAddedDatasetsQuery(strBegin || useableTags[0], strEnd || useableTags[1]);
-    deletedDatasetsQuery = getDeletedDatasetsQuery(strBegin || useableTags[0], strEnd || useableTags[1]);
-  }
-
-  const addedDatasets = addedDatasetsQuery && await ddnFetcher(addedDatasetsQuery)
-  const deletedDatasets = deletedDatasetsQuery && await ddnFetcher(deletedDatasetsQuery)
-
   return {
     props: {
       fallback: {
-        [SocrataRepoTagsQuery]: useableTags,
-        ...{ [addedDatasetsQuery]: addedDatasets },
-        ...{ [deletedDatasetsQuery]: deletedDatasets }
+        [SocrataRepoTagsQuery]: filterUseableTags(nodes),
       }
     }
   }
 }
 
 export default Home
-
 
 export const pluckDDNSuccess = (data: any) => data?.success ? [...data.rows] : [];

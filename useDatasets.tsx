@@ -1,20 +1,28 @@
 import useSWR from 'swr';
-import { buildAddedDatasetsQuery, buildDeletedDatasetsQuery, ddnFetcher } from './data'
+import { ddnFetcher, getAddedDatasetsQuery, getDeletedDatasetsQuery } from './data'
 
+interface UseDatasetsParams {
+  tags: string[] | undefined;
+  begin: string | string[] | undefined;
+  end: string | string[] | undefined;
+}
 /** Fetch added & deleted datasets */
-const useDatasets = (tags: string[] | undefined, rangeValues: number[]) => {
-  const { data: added, error: addedError } = useSWR(tags
-    ? buildAddedDatasetsQuery(tags, rangeValues[0], rangeValues[1])
-    : null,
-    ddnFetcher,
-    // { revalidateOnMount: false } TODO: consider using this
+const useDatasets = ({ tags, begin, end }: UseDatasetsParams) => {
+  if (typeof begin === 'object' || typeof end === 'object') {
+    throw Error('invalid query params')
+  }
+  const { data: added, error: addedError } = useSWR(
+    (!!tags && !!begin && !!end)
+      ? getAddedDatasetsQuery(begin, end)
+      : null,
+    ddnFetcher
   )
-  const { data: deleted, error: deletedError } = useSWR(tags
-    ? buildDeletedDatasetsQuery(tags, rangeValues[0], rangeValues[1])
-    : null,
-    ddnFetcher)
-
-
+  const { data: deleted, error: deletedError } = useSWR(
+    (!!tags && !!begin && !!end)
+      ? getDeletedDatasetsQuery(begin, end)
+      : null,
+    ddnFetcher
+  );
 
   return { added, addedError, deleted, deletedError }
 }

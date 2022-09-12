@@ -3,7 +3,7 @@ import { request, gql } from 'graphql-request'
 const UNIFIED_GQL_API = 'https://api.splitgraph.com/gql/cloud/unified/graphql';
 const DDN_API = 'https://data.splitgraph.com/sql/query/ddn';
 
-interface Tag {
+export interface Tag {
   tag: string;
 }
 
@@ -18,8 +18,8 @@ export interface SocrataTagsGQL {
  * 
  * Used to populate the UI (i.e. date picker) with only available dates.
  */
-export const SocrataRepoTagsQuery = gql`
-query SocrataRepoTags {
+export const SocrataRepoTagsQuery = gql
+  `query SocrataRepoTags {
   tags(
     condition: { namespace: "splitgraph", repository: "socrata" }
     orderBy: _CREATED_AT_DESC
@@ -30,7 +30,13 @@ query SocrataRepoTags {
   }
 }
 `
-export const unifiedFetcher = (query: string) => request(UNIFIED_GQL_API, query)
+export const unifiedFetcher = (query: string) => {
+  const t0 = performance.now();
+  const r = request(UNIFIED_GQL_API, query)
+  const t1 = performance.now();
+  console.log(`Call to request() took ${t1 - t0} milliseconds.`);
+  return r;
+}
 
 /**
  * I observed that "20220822" yields diffs but "20220822-180102"
