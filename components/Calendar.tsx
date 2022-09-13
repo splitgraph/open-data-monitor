@@ -1,5 +1,7 @@
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'
+import Calendar, { type CalendarTileProperties, type CalendarProps } from 'react-calendar';
+// import '../styles/reactcalendar.css';
+import 'react-calendar/dist/Calendar.css';
+
 
 const today = new Date()
 const tomorrow = new Date(today)
@@ -10,7 +12,7 @@ const in5Days = new Date(today)
 in3Days.setDate(in5Days.getDate() + 5)
 const datesToAddContentTo = [tomorrow, in3Days, in5Days];
 
-const tileContent = ({ date, view }) => {
+const tileContent = ({ date, view }: CalendarTileProperties) => {
   // Add class to tiles in month view only
   // console.log({ date, view })
   if (view === 'month') {
@@ -20,8 +22,12 @@ const tileContent = ({ date, view }) => {
     // }
   }
 }
-
-const SocfeedCalendar = ({ date, setDate, tags }) => {
+interface SocfeedCalendarProps {
+  date: CalendarProps['value']
+  setDate: CalendarProps['onChange'],
+  tags: string[]
+}
+const SocfeedCalendar = ({ date, setDate, tags }: SocfeedCalendarProps) => {
   return (
     <Calendar
       onChange={setDate}
@@ -29,7 +35,10 @@ const SocfeedCalendar = ({ date, setDate, tags }) => {
       tileDisabled={(e) => {
         return false
       }}
-    // tileContent={tileContent}
+      // tileContent={tileContent}
+      onClickDay={(e) => {
+        console.log(e)
+      }}
     />
   )
 }

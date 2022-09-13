@@ -1,3 +1,4 @@
+// @ts-nocheck 
 import { useState, useEffect } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import Router, { useRouter, type NextRouter } from 'next/router'
@@ -13,6 +14,7 @@ import SocfeedCalendar from '../components/Calendar'
 
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
+import { SelectTag } from '../components/SelectTag';
 
 type SocFeedDate = 'begin' | 'end';
 
@@ -49,6 +51,7 @@ const initializeDates = (tags: string[], router: NextRouter) => {
 }
 
 const setDate = (whichDate: SocFeedDate, tag: string) => {
+
   const newQueryParameters = {
     ...Router.query,
     [whichDate]: tag
@@ -86,16 +89,22 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
           <div className={styles.calendars}>
             {!!tags?.length && !!begin && !!end &&
               <>
-                <SocfeedCalendar
-                  date={parseDate(begin)}
-                  setDate={(date: string) => setDate('begin', date)}
-                  tags={tags}
-                />
-                <SocfeedCalendar
-                  date={parseDate(end)}
-                  setDate={(date: string) => setDate('end', date)}
-                  tags={tags}
-                />
+                <div>
+                  <SocfeedCalendar
+                    date={parseDate(begin)}
+                    setDate={(date: string) => setDate('begin', date)}
+                    tags={tags}
+                  />
+                  <SelectTag data={tags} error={tagsError} />
+                </div>
+                <div>
+                  <SocfeedCalendar
+                    date={parseDate(end)}
+                    setDate={(date: string) => setDate('end', date)}
+                    tags={tags}
+                  />
+                  <SelectTag data={tags} error={tagsError} />
+                </div>
               </>
             }
           </div>
