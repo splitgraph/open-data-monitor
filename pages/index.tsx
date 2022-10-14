@@ -1,5 +1,5 @@
 // @ts-nocheck 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import Router, { useRouter, type NextRouter } from 'next/router'
 import { SWRConfig } from 'swr'
@@ -10,16 +10,17 @@ import { DiffList } from '../components/Diffs'
 import {
   unifiedFetcher, filterUseableTags, SocrataRepoTagsQuery,
 } from '../data/index'
-import SocfeedCalendar from '../components/Calendar'
-
+import DayPicker from '../components/DayPicker'
+import { Popover } from '../components/Popover'
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
-import { SelectTag } from '../components/SelectTag';
 
 type SocFeedDate = 'begin' | 'end';
 
 const parseDate = (date: string) => {
-  console.log({ date })
+  if (!date) {
+    return undefined
+  }
   if (date.length === 8) {
     return parse(date, 'yyyyMMdd', new Date())
   } else if (date.length === 15) {
@@ -51,7 +52,7 @@ const initializeDates = (tags: string[], router: NextRouter) => {
 }
 
 const setDate = (whichDate: SocFeedDate, tag: string) => {
-
+  console.log({ whichDate, tag })
   const newQueryParameters = {
     ...Router.query,
     [whichDate]: tag
@@ -62,18 +63,25 @@ const setDate = (whichDate: SocFeedDate, tag: string) => {
   });
 }
 
+const resetQueryParams = () => {
+  Router.replace(Router.pathname, undefined, { shallow: true });
+}
+
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
   const { begin, end } = router.query;
+
   const { tags, tagsError } = useTags();
-  // useEffect(() => {
-  //   if (tags?.length) {
-  //     initializeDates(tags) // initialize (and validate) query params
-  //   }
-  // }, [tags])
   const { added, addedError, deleted, deletedError } = useDatasets({
     tags, begin: router.query.begin, end: router.query.end
   })
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    // if (tags?.length) {
+    //   initializeDates(tags, router) // initialize (and validate) query params
+    // }
+  }, [router.isReady, tags, router])
 
   return (
     <div className={styles.container}>
@@ -81,29 +89,43 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
         <h4 className={styles.description}>Discover interesting changes</h4>
-        <button onClick={() => { initializeDates(tags, router) }}>click</button>
-        <pre>{begin.toString()}</pre>
-        <pre>{end.toString()}</pre>
+        <button onClick={() => { initializeDates(tags, router) }}>Use default dates</button>
+        <pre>begin: {begin?.toString()}</pre>
+        <pre>end: {end?.toString()}</pre>
+        {!!tags?.length &&
+          <>
+            <Popover
+              render={({ close, labelId, descriptionId }) => (
+                <>
+                  <h3 id={labelId}>Date range</h3>
+                  <p id={descriptionId}>Keep the name short!</p>
+                  <button onClick={close}>close</button>
+                  <DayPicker />
+                </>
+              )}
+            >
+              <button>Click to open popover</button>
+            </Popover>
+          </>
+        }
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
           <div className={styles.calendars}>
             {!!tags?.length && !!begin && !!end &&
               <>
                 <div>
-                  <SocfeedCalendar
+                  {/* <SocfeedCalendar1
                     date={parseDate(begin)}
                     setDate={(date: string) => setDate('begin', date)}
                     tags={tags}
-                  />
-                  <SelectTag data={tags} error={tagsError} />
+                  /> */}
                 </div>
                 <div>
-                  <SocfeedCalendar
+                  {/* <SocfeedCalendar1
                     date={parseDate(end)}
                     setDate={(date: string) => setDate('end', date)}
                     tags={tags}
-                  />
-                  <SelectTag data={tags} error={tagsError} />
+                  /> */}
                 </div>
               </>
             }
