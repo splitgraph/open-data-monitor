@@ -1,3 +1,5 @@
+//@ts-nocheck
+// Original "two notch slider" for choosing two tags
 import { type Dispatch, type SetStateAction } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 

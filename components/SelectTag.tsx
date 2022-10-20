@@ -1,8 +1,6 @@
 // This was an initial experiment for a dropdown-based tag chooser. Replaced with <RangeSlider>
 // because it lets the user pick two dates in one place
 
-import { filterUseableTags } from '../data/index';
-
 export const SelectTag = ({ data, error }: { data: any, error: any }) => {
 
   if (error) {

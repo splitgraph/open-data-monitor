@@ -1,87 +1,43 @@
-// @ts-nocheck 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
-import Router, { useRouter, type NextRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
-import { parse } from 'date-fns'
+import { type DateRange } from 'react-day-picker'
 import styles from '../styles/Home.module.css'
 import { HeadTag } from '../components/HeadTag'
 import { DiffList } from '../components/Diffs'
-import {
-  unifiedFetcher, filterUseableTags, SocrataRepoTagsQuery,
-} from '../data/index'
-import DayPicker from '../components/DayPicker'
+import { unifiedFetcher, SocrataRepoTagsQuery, type Tag } from '../data/index'
+import RangePicker, { dateifyTag } from '../components/DayPicker'
 import { Popover } from '../components/Popover'
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
-
-type SocFeedDate = 'begin' | 'end';
-
-const parseDate = (date: string) => {
-  if (!date) {
-    return undefined
-  }
-  if (date.length === 8) {
-    return parse(date, 'yyyyMMdd', new Date())
-  } else if (date.length === 15) {
-    return parse(date, 'yyyyMMdd-HHmmss', new Date())
-  }
-
-  throw Error('unexpected date length, could not parse')
-}
-
-const initializeDates = (tags: string[], router: NextRouter) => {
-  const sorted = tags.sort();
-  const { begin, end } = router.query;
-  if (begin && end && tags.includes(begin) && tags.includes(end)) {
-    return;
-  } else {
-    const begin = sorted[0]
-    const end = sorted[sorted.length - 1]
-
-    const newQueryParams = {
-      ...router.query,
-      begin,
-      end
-    }
-    router.replace({
-      pathname: Router.pathname,
-      query: newQueryParams,
-    });
-  }
-}
-
-const setDate = (whichDate: SocFeedDate, tag: string) => {
-  console.log({ whichDate, tag })
-  const newQueryParameters = {
-    ...Router.query,
-    [whichDate]: tag
-  }
-  Router.replace({
-    pathname: Router.pathname,
-    query: newQueryParameters,
-  });
-}
-
-const resetQueryParams = () => {
-  Router.replace(Router.pathname, undefined, { shallow: true });
-}
+import Button from '../components/Button'
+import { filterDates } from '../data'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
-  const { begin, end } = router.query;
-
+  const { from, to } = router.query;
   const { tags, tagsError } = useTags();
-  const { added, addedError, deleted, deletedError } = useDatasets({
-    tags, begin: router.query.begin, end: router.query.end
-  })
-
+  const { added, addedError, deleted, deletedError } = useDatasets({ tags, from, to })
+  const [range, setRange] = useState<DateRange | undefined>();
+  const [filter, setFilter] = useState<string>();
   useEffect(() => {
-    if (!router.isReady) return;
-    // if (tags?.length) {
-    //   initializeDates(tags, router) // initialize (and validate) query params
-    // }
-  }, [router.isReady, tags, router])
+    // if query params from/to exist, we should call setRange() so DayPicker's
+    // initial date range matches the query params
+    if (from && to) {
+      setRange({
+        from: dateifyTag(from),
+        ...(to && { to: dateifyTag(to) })
+      })
+    }
+  },
+    // Empty array b/c we only want to sync once, at init time
+    // eslint-disable-next-line
+    [])
+
+  const resetQueryParams = () => {
+    router.replace(router.pathname, undefined, { shallow: true });
+  }
 
   return (
     <div className={styles.container}>
@@ -89,61 +45,76 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
         <h4 className={styles.description}>Discover interesting changes</h4>
-        <button onClick={() => { initializeDates(tags, router) }}>Use default dates</button>
-        <pre>begin: {begin?.toString()}</pre>
-        <pre>end: {end?.toString()}</pre>
-        {!!tags?.length &&
-          <>
-            <Popover
-              render={({ close, labelId, descriptionId }) => (
-                <>
-                  <h3 id={labelId}>Date range</h3>
-                  <p id={descriptionId}>Keep the name short!</p>
-                  <button onClick={close}>close</button>
-                  <DayPicker />
-                </>
-              )}
-            >
-              <button>Click to open popover</button>
-            </Popover>
-          </>
-        }
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
-          <div className={styles.calendars}>
-            {!!tags?.length && !!begin && !!end &&
+          <div style={{ textAlign: 'center' }}>
+            {!!tags?.length &&
               <>
-                <div>
-                  {/* <SocfeedCalendar1
-                    date={parseDate(begin)}
-                    setDate={(date: string) => setDate('begin', date)}
-                    tags={tags}
-                  /> */}
-                </div>
-                <div>
-                  {/* <SocfeedCalendar1
-                    date={parseDate(end)}
-                    setDate={(date: string) => setDate('end', date)}
-                    tags={tags}
-                  /> */}
-                </div>
+                <Popover
+                  render={({ close }) => (
+                    <div style={{ background: 'gray', boxShadow: 'rgb(0 0 0 / 20%) 0px 11px 15px -7px, rgb(0 0 0 / 14%) 0px 24px 38px 3px, rgb(0 0 0 / 12%) 0px 9px 46px 8px' }}>
+                      <RangePicker tags={tags} range={range} setRange={setRange} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1em' }}>
+                        <Button onClick={() => {
+                          const randOffsetOf10 = Math.floor(Math.random() * 10 + 1)
+                          const filteredTags = filterDates(tags);
+                          const from = dateifyTag(filteredTags[filteredTags.length - 1 - randOffsetOf10])
+                          const to = dateifyTag(filteredTags[filteredTags.length - 1]);
+                          setRange({ from, to })
+                          close(from, to)
+                        }}>🤷 Just choose something for me</Button>&nbsp;
+                        <Button onClick={() => {
+                          close(range?.from, range?.to)
+                        }}>✅ Submit</Button>
+                      </div>
+                    </div>
+                  )}
+                >
+                  <Button>✏️ Choose Dates</Button>
+                </Popover>
+                &nbsp;
+                <Popover
+                  render={({ close }) => (
+                    <div style={{ background: 'gray', boxShadow: 'rgb(0 0 0 / 20%) 0px 11px 15px -7px, rgb(0 0 0 / 14%) 0px 24px 38px 3px, rgb(0 0 0 / 12%) 0px 9px 46px 8px' }}>
+                      <input value={filter} onChange={(e) => setFilter(e.target.value)} />
+                      <p>TODO: derivative dataset: persist namespace in record</p>
+                      <Button onClick={() => close()}>Submit</Button>
+                    </div>
+                  )}>
+                  <Button>⛏ Filter by namespace</Button>
+                </Popover>
+                <>&nbsp;<Button onClick={resetQueryParams}>🗑 Reset</Button></>
               </>
             }
           </div>
-          <div style={{ textAlign: 'right' }}>
-            {!!added?.length && <p><em>{added.length} results</em></p>}
-          </div>
-          <h4>Added</h4>
-          <DiffList data={added} error={addedError} />
-          <h4>Deleted</h4>
-          {deletedError && <h3>Error querying deleted datasets</h3>}
-          {pluckDDNSuccess(deleted)?.map(({ domain }, index) => <div key={index}>{domain}</div>)}
-        </main>
-      </SWRConfig>
-      {/* <pre>
-        {JSON.stringify(fallback, null, 2)}
-      </pre> */}
-      <footer className={styles.footer}>
+          {
+            !from && <h2 style={{ textAlign: 'center' }}>
+              <span className={styles.pulseWrapper}>
+                <span className={styles.pulse}>👆</span>
+              </span>
+              Choose a date range
+            </h2>
+          }
+          {
+            added && <>
+              <div style={{ textAlign: 'right' }}><p><em>{added.rows.length} added</em></p></div>
+              <h4>Added</h4>
+              <DiffList data={added} error={addedError} filter={filter} />
+            </>
+          }
+          {
+            deleted && <>
+              <div style={{ textAlign: 'right' }}>
+                {deleted?.success && <p><em>{deleted.rows.length} deleted</em></p>}
+              </div>
+              <h4>Deleted</h4>
+              {deletedError && <h3>Error querying deleted datasets</h3>}
+              {pluckDDNSuccess(deleted)?.map(({ domain }, index) => <div key={index}>{domain}</div>)}
+            </>
+          }
+        </main >
+      </SWRConfig >
+      <footer className={styles.footer} >
         <a href="https://www.splitgraph.com" target="_blank" rel="noopener noreferrer">
           Powered by Splitgraph
         </a>
@@ -162,7 +133,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   return {
     props: {
       fallback: {
-        [SocrataRepoTagsQuery]: filterUseableTags(nodes),
+        [SocrataRepoTagsQuery]: nodes,
       }
     }
   }

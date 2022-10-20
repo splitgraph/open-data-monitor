@@ -1,4 +1,5 @@
-import React, { cloneElement, useMemo, useState } from "react";
+import React, { cloneElement, MouseEventHandler, useMemo, useState } from "react";
+import { useRouter } from 'next/router'
 import {
   Placement,
   offset,
@@ -14,18 +15,18 @@ import {
   FloatingFocusManager
 } from "@floating-ui/react-dom-interactions";
 import { mergeRefs } from "react-merge-refs";
+import { tagifyDate } from "./DayPicker";
 
 interface Props {
   render: (data: {
-    close: () => void;
-    labelId: string;
-    descriptionId: string;
+    close: (from?: Date | undefined, to?: Date | undefined) => void;
   }) => React.ReactNode;
   placement?: Placement;
   children: JSX.Element;
 }
 
 export const Popover = ({ children, render, placement }: Props) => {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const { x, y, reference, floating, strategy, context } = useFloating({
@@ -35,10 +36,6 @@ export const Popover = ({ children, render, placement }: Props) => {
     placement,
     whileElementsMounted: autoUpdate
   });
-
-  const id = useId();
-  const labelId = `${id}-label`;
-  const descriptionId = `${id}-description`;
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
     useClick(context),
@@ -58,7 +55,7 @@ export const Popover = ({ children, render, placement }: Props) => {
       {open && (
         <FloatingFocusManager
           context={context}
-          modal={false}
+          modal={true}
           order={["reference", "content"]}
           returnFocus={false}
         >
@@ -70,15 +67,22 @@ export const Popover = ({ children, render, placement }: Props) => {
               top: y ?? 0,
               left: x ?? 0
             }}
-            aria-labelledby={labelId}
-            aria-describedby={descriptionId}
             {...getFloatingProps()}
           >
             {render({
-              labelId,
-              descriptionId,
-              close: () => {
+              close: (from, to) => {
                 setOpen(false);
+                if (from) {
+                  const newQueryParams = {
+                    ...router.query,
+                    ...(from && { from: tagifyDate(from) }),
+                    ...(to && { to: tagifyDate(to) })
+                  }
+                  router.replace({
+                    pathname: router.pathname,
+                    query: newQueryParams,
+                  })
+                }
               }
             })}
           </div>

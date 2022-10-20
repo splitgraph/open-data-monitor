@@ -42,8 +42,8 @@ export const unifiedFetcher = (query: string) => {
  * I observed that "20220822" yields diffs but "20220822-180102"
  * does not. Thus filter for 'day' tags
  */
-export const filterUseableTags = (nodes: Tag[]): string[] => {
-  return nodes.map(({ tag }) => tag) //.filter((n: string) => n.length === 8)
+export const filterDates = (nodes: Tag[]): string[] => {
+  return nodes?.map(({ tag }) => tag).filter((n: string) => n.length === 8)
 }
 
 /**
@@ -129,5 +129,5 @@ export const buildDeletedDatasetsQuery = (tags: string[], leftIndex: number, rig
 }
 
 export const buildValues = (rawTagsData: SocrataTagsGQL | undefined): string[] => {
-  return rawTagsData && filterUseableTags(rawTagsData?.tags?.nodes) || [];
+  return rawTagsData && filterDates(rawTagsData?.tags?.nodes) || [];
 }
