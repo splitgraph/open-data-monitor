@@ -52,8 +52,9 @@ export const DiffItem = ({ permalink, desc, name, updated_at, created_at, domain
 interface FeedEntriesProps {
   data: any;
   error: any;
+  filter?: string;
 }
-export const DiffList = ({ data, error, }: FeedEntriesProps) => {
+export const DiffList = ({ data, error, filter }: FeedEntriesProps) => {
   // TODO: consider introducing a list view for 'big' results
   // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
@@ -65,8 +66,12 @@ export const DiffList = ({ data, error, }: FeedEntriesProps) => {
     <div className={styles.grid}>
       {
         data ?
-          cleanupData(data).length
-            ? cleanupData(data).map((e: DiffItem) => <DiffItem key={e.id} {...e} />)
+          pluckDDNSuccess(data).length
+            ? pluckDDNSuccess(data)
+              .filter(() => true)
+              .map((item: DiffItem) => {
+                return <DiffItem key={item.id} {...item} />
+              })
             : <h3>No records found. Try adjusting the dates</h3>
           : <p>loading...</p>
       }
@@ -74,4 +79,4 @@ export const DiffList = ({ data, error, }: FeedEntriesProps) => {
   )
 }
 
-const cleanupData = (data: any) => data?.success ? [...data.rows] : [];
+export const pluckDDNSuccess = (data: any) => data?.success ? [...data.rows] : [];

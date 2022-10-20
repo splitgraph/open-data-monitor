@@ -3,7 +3,7 @@ import { request, gql } from 'graphql-request'
 const UNIFIED_GQL_API = 'https://api.splitgraph.com/gql/cloud/unified/graphql';
 const DDN_API = 'https://data.splitgraph.com/sql/query/ddn';
 
-interface Tag {
+export interface Tag {
   tag: string;
 }
 
@@ -13,8 +13,13 @@ export interface SocrataTagsGQL {
   }
 }
 
-export const SocrataRepoTagsQuery = gql`
-query SocrataRepoTags {
+/**
+ * Fetch all available tags
+ * 
+ * Used to populate the UI (i.e. date picker) with only available dates.
+ */
+export const SocrataRepoTagsQuery = gql
+  `query SocrataRepoTags {
   tags(
     condition: { namespace: "splitgraph", repository: "socrata" }
     orderBy: _CREATED_AT_DESC
@@ -25,14 +30,20 @@ query SocrataRepoTags {
   }
 }
 `
-export const unifiedFetcher = (query: string) => request(UNIFIED_GQL_API, query)
+export const unifiedFetcher = (query: string) => {
+  const t0 = performance.now();
+  const r = request(UNIFIED_GQL_API, query)
+  const t1 = performance.now();
+  console.log(`Call to request() took ${t1 - t0} milliseconds.`);
+  return r;
+}
 
 /**
  * I observed that "20220822" yields diffs but "20220822-180102"
  * does not. Thus filter for 'day' tags
  */
-export const filterUseableTags = (nodes: Tag[]): string[] => {
-  return nodes.map(({ tag }) => tag).filter((n: string) => n.length === 8)
+export const filterDates = (nodes: Tag[]): string[] => {
+  return nodes?.map(({ tag }) => tag).filter((n: string) => n.length === 8)
 }
 
 /**
@@ -45,8 +56,8 @@ export const filterUseableTags = (nodes: Tag[]): string[] => {
  * @param {string} newTag the "new" tag
  * @returns {string} SQL query intended for DDN
  */
-export const getNewDatasetsQuery = (oldTag: string, newTag: string) => `
-SELECT
+export const getAddedDatasetsQuery = (oldTag: string, newTag: string) =>
+  `SELECT
   new.domain AS domain,
   new.id AS id,
   new.name AS name,
@@ -61,8 +72,7 @@ RIGHT JOIN
 ON
   old.id = new.id
 WHERE
-  old.id IS NOT DISTINCT FROM NULL
-`
+  old.id IS NOT DISTINCT FROM NULL`
 
 // export const getNewDatasetsQuery2 = (oldTag: string, newTag: string) => `
 // SELECT 
@@ -82,14 +92,14 @@ WHERE
  * Return a SQL query that shows datasets deleted from Socrata during the given
  * time range (i.e. between the specified tags)
  * 
- * Inspired by https://www.splitgraph.com/docs/query/time-travel-queries
+ * Via https://mattermost.splitgraph.io/splitgraph-core/pl/d497yyxubpdstkqzs4f5a4f36y
  *
  * @param {string} oldTag the "old" tag
  * @param {string} newTag the "new" tag
  * @returns {string} SQL query intended for DDN
  */
-export const getDeletedDatasetsQuery = (oldTag: string, newTag: string) => `
-SELECT
+export const getDeletedDatasetsQuery = (oldTag: string, newTag: string) =>
+  `SELECT
     distinct old.domain AS domain
 FROM
     "splitgraph/socrata:${oldTag}".datasets old
@@ -98,8 +108,7 @@ LEFT JOIN
 ON
     old.domain = new.domain
 WHERE
-  new.domain is null
-`
+  new.domain is null`
 
 export const ddnFetcher = (query: string) => fetch(DDN_API, {
   method: "POST",
@@ -111,11 +120,14 @@ export const ddnFetcher = (query: string) => fetch(DDN_API, {
   })
 }).then((res) => res.json());
 
-export const buildQuery = (rawTagsData: SocrataTagsGQL, leftIndex: number, rightIndex: number): string => {
-  const tags = buildValues(rawTagsData);
-  return getNewDatasetsQuery(tags[leftIndex], tags[rightIndex])
+export const buildAddedDatasetsQuery = (tags: string[], leftIndex: number, rightIndex: number): string => {
+  return getAddedDatasetsQuery(tags[leftIndex], tags[rightIndex])
+}
+
+export const buildDeletedDatasetsQuery = (tags: string[], leftIndex: number, rightIndex: number): string => {
+  return getDeletedDatasetsQuery(tags[leftIndex], tags[rightIndex])
 }
 
 export const buildValues = (rawTagsData: SocrataTagsGQL | undefined): string[] => {
-  return rawTagsData && filterUseableTags(rawTagsData?.tags?.nodes) || [];
+  return rawTagsData && filterDates(rawTagsData?.tags?.nodes) || [];
 }
