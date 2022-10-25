@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import styles from '../styles/Home.module.css'
+import SplitgraphRepoUrl from './SplitgraphRepoUrl';
 
 interface DiffItem {
   permalink: string;
@@ -12,8 +13,9 @@ interface DiffItem {
 }
 
 // Render a diff
-export const DiffItem = ({ permalink, desc, name, updated_at, created_at, domain }: DiffItem) => {
+export const DiffItem = ({ permalink, desc, name, updated_at, created_at, domain, id }: DiffItem) => {
   const [fullDesc, setFullDesc] = useState(false);
+  const [showRepo, setShowRepo] = useState(false);
   return (
     <div className={styles.card}>
       <h2>{name}</h2>
@@ -44,6 +46,11 @@ export const DiffItem = ({ permalink, desc, name, updated_at, created_at, domain
       <br />
       <br />
       <a href={permalink} target="_new">🔗</a>
+      <br />
+      <div className={styles.repoButton}>
+        <button onClick={() => { setShowRepo(!showRepo) }}>repo</button>&nbsp;
+        {showRepo && <SplitgraphRepoUrl id={id} name={name} domain={domain} />}
+      </div>
     </div >
   )
 }

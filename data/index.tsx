@@ -30,13 +30,17 @@ export const SocrataRepoTagsQuery = gql
   }
 }
 `
-export const unifiedFetcher = (query: string) => {
-  const t0 = performance.now();
-  const r = request(UNIFIED_GQL_API, query)
-  const t1 = performance.now();
-  console.log(`Call to request() took ${t1 - t0} milliseconds.`);
-  return r;
+export const SplitgraphURLQuery = gql
+  `query getSocrataRepo($id: String!, $domain: String!, $name: String!) {
+    socrataExternalRepositories (datasets: 
+        [{id: $id, domain: $domain, name: $name}]) {
+        namespace
+        repository
+    }
 }
+`
+
+export const unifiedFetcher = (query: string) => request(UNIFIED_GQL_API, query)
 
 /**
  * I observed that "20220822" yields diffs but "20220822-180102"
