@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react';
 import { request } from 'graphql-request'
 import useSWR from 'swr';
-import { SplitgraphURLQuery } from './data'
-
-/** As of Oct 25 2022, #861 is not yet deployed; point to dev server for now */
-const DEVSERVER_GQL_API = 'https://api.splitgraph.test/gql/cloud/unified/graphql';
+import { SplitgraphURLQuery, UNIFIED_GQL_API } from './data'
 
 /** Append namespace/repository to this URL */
 const SPLITGRAPH_URL = 'https://www.splitgraph.com/'
 
 const fetcher = (query: string, variables: any) => {
   console.log({ query, variables })
-  return request(DEVSERVER_GQL_API, query, variables)
+  return request(UNIFIED_GQL_API, query, variables)
 }
 
 interface ReturnedRepositories {
