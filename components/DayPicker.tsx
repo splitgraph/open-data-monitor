@@ -10,7 +10,7 @@ export const tagifyDate = (date: Date): string => {
   return date?.toISOString().slice(0, 10).split('-').join('')
 }
 
-export const dateifyTag = (i: string | Array<string> | Tag | Array<Tag>) => {
+export const dateifyTag = (i: string | Array<string>) => {
   // Handle duped query params case
   if (typeof i === 'object') {
     throw new Error("Should be only one query param for from/to")

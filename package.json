@@ -11,6 +11,9 @@
   "dependencies": {
     "@floating-ui/react-dom-interactions": "^0.10.1",
     "@heroicons/react": "^2.0.12",
+    "@nivo/calendar": "^0.80.0",
+    "@nivo/colors": "^0.80.0",
+    "@nivo/core": "^0.80.0",
     "d3": "^7.6.1",
     "date-fns": "2.29.3",
     "graphql": "16.6.0",

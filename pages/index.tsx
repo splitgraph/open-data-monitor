@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { SWRConfig } from 'swr'
 import { type DateRange } from 'react-day-picker'
 import styles from '../styles/Home.module.css'
@@ -45,6 +46,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
         <h4 className={styles.description}>Discover interesting changes</h4>
+        <h6 style={{ textAlign: 'center' }}><Link href="/2">heatmap</Link></h6>
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
           <div style={{ textAlign: 'center' }}>
