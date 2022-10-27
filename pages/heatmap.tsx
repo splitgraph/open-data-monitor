@@ -27,7 +27,7 @@ const Mockup = () => {
     const valuesAndDays = new Map<string, number>();
     tagsArr?.forEach(tag => {
       if (tag.length === 8) {
-        valuesAndDays.set(tag, 0)
+        valuesAndDays.set(tag, 1)
       }
     })
 
@@ -47,20 +47,31 @@ const Mockup = () => {
   }, [tags])
 
   return (
-    <div style={{ height: '600px', background: 'gray' }}>
+    <div style={{
+      height: '700px',
+      width: '900px',
+      border: '1px solid gray',
+      borderRadius: '.5rem',
+      margin: '1em auto',
+      padding: '1em',
+      paddingBottom: '5em'
+    }}>
       {tagsError
         ?
-        <div>Sorry, could not load tags.</div>
+        <div>Sorry, could&#39;t load tags.</div>
         :
-        <Heatmap data={data}
-          onClick={(e: any) => {
-            const { value } = e;
-            if (!value) return;
-            const tag = tagifyDate(e.day)
-            const url = `https://www.splitgraph.com/splitgraph/socrata/${tag}/-/tables`
-            window.location.assign(url);
-          }}
-        />
+        <>
+          {!!data.length && <h5>{data.length} tags found</h5>}
+          <Heatmap data={data}
+            onClick={(e: any) => {
+              const { value } = e;
+              if (!value) return;
+              const tag = tagifyDate(e.day)
+              const url = `https://www.splitgraph.com/splitgraph/socrata/${tag}/-/tables`
+              window.location.assign(url);
+            }}
+          />
+        </>
       }
     </div>
   )

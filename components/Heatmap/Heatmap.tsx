@@ -25,14 +25,15 @@ const Heatmap = (props: HeatmapProps) => {
       dayBorderColor="#ffffff"
       legends={[
         {
-          anchor: 'top-right',
-          direction: 'column',
-          translateX: -36,
-          itemCount: 4,
+          itemBackground: 'lightgray',
+          anchor: 'bottom-right',
+          direction: 'row',
+          translateX: -56,
+          translateY: -45,
+          itemCount: 5,
           itemWidth: 42,
-          itemHeight: 36,
-          itemsSpacing: 14,
-          toggleSerie: true
+          itemHeight: 16,
+          itemsSpacing: 10,
           // itemDirection: 'right-to-left'
         }
       ]}
