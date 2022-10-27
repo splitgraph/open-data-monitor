@@ -18,9 +18,14 @@ const tagifyDate = (date: string) => {
   return date.replaceAll('-', '');
 }
 
-const Mockup = () => {
+const HeatmapPage = () => {
   const { tags, tagsError } = useTags();
   const [data, setData] = useState<Array<HeatmapValue>>([]);
+  const [activeTab, setActiveTab] = useState(new Date('2024').getFullYear());
+
+  const handleChange = (e: React.SyntheticEvent) => {
+    setActiveTab(Number(e.currentTarget.getAttribute('label')) + 1)
+  }
 
   useEffect(() => {
     const tagsArr = tags?.map(({ tag }) => tag)
@@ -48,20 +53,28 @@ const Mockup = () => {
 
   return (
     <div style={{
-      height: '700px',
+      height: '330px',
       width: '900px',
       border: '1px solid gray',
       borderRadius: '.5rem',
       margin: '1em auto',
       padding: '1em',
-      paddingBottom: '5em'
+      paddingBottom: '5em',
+      boxShadow: '0px 2px 6px #AAA'
     }}>
       {tagsError
         ?
         <div>Sorry, could&#39;t load tags.</div>
         :
         <>
-          {!!data.length && <h5>{data.length} tags found</h5>}
+          <div>
+            {!!data.length && <h5>{data.length} tags found</h5>}
+            <div style={{ display: 'flex', justifyContent: 'space-around', width: '235px', marginLeft: 'auto' }}>
+              <Tab label={2020} onClick={handleChange} active={activeTab === new Date('2022').getFullYear()} />&nbsp;
+              <Tab label={2021} onClick={handleChange} active={activeTab === new Date('2023').getFullYear()} />
+              <Tab label={2022} onClick={handleChange} active={activeTab === new Date('2024').getFullYear()} />
+            </div>
+          </div>
           <Heatmap data={data}
             onClick={(e: any) => {
               const { value } = e;
@@ -70,12 +83,35 @@ const Mockup = () => {
               const url = `https://www.splitgraph.com/splitgraph/socrata/${tag}/-/tables`
               window.location.assign(url);
             }}
+            from={new Date(activeTab + '')}
+            to={new Date(activeTab + '')}
           />
+
         </>
       }
     </div>
   )
 }
 
-export default Mockup
+export default HeatmapPage
 
+const Tab = (props: any) => {
+  const [hover, setHover] = useState(false);
+
+  const handleMouseEnter = () => { setHover(true) };
+  const handleMouseLeave = () => { setHover(false) };
+  const { active, ...rest } = props;
+  return (
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        backgroundColor: props.active ? '#1f6feb' : hover ? 'gray' : undefined,
+        color: props.active ? 'white' : undefined,
+        padding: '1rem',
+        borderRadius: '.5rem',
+      }}
+      {...rest}
+    >{props.label}</div>
+  )
+}

@@ -1,4 +1,4 @@
-import { ResponsiveCalendar } from '@nivo/calendar'
+import { ResponsiveCalendar, type DateOrString } from '@nivo/calendar'
 
 // make sure parent container have a defined height when using
 // responsive component, otherwise height will be 0 and
@@ -7,15 +7,17 @@ import { ResponsiveCalendar } from '@nivo/calendar'
 interface HeatmapProps {
   data: Array<any>;
   onClick: (e: any) => void;
+  from: DateOrString;
+  to: DateOrString;
 }
 const Heatmap = (props: HeatmapProps) => {
-  const { data, ...rest } = props
-  https://www.splitgraph.com/splitgraph/socrata/20221027-000122/-/overview
+  const { data, from, to, ...rest } = props
+
   return (
     <ResponsiveCalendar
       data={data}
-      from="2020-08-01"
-      to="2022-12-31"
+      from={from}
+      to={to}
       emptyColor="#ddd"
       colors={['#0e4429', '#006d32', '#26a641', '#39d353']}
       margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
@@ -29,8 +31,8 @@ const Heatmap = (props: HeatmapProps) => {
           anchor: 'bottom-right',
           direction: 'row',
           translateX: -56,
-          translateY: -45,
-          itemCount: 5,
+          translateY: -75,
+          itemCount: 4,
           itemWidth: 42,
           itemHeight: 16,
           itemsSpacing: 10,
