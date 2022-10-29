@@ -14,12 +14,13 @@ import useTags from '../useTags'
 import useDatasets from '../useDatasets'
 import Button from '../components/Button'
 import { filterDates } from '../data'
+import DatasetList from '../components/DatasetList'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
   const { from, to } = router.query;
   const { tags, tagsError } = useTags();
-  const { added, addedError, deleted, deletedError } = useDatasets({ tags, from, to })
+  const { data, error } = useDatasets({ tags, from, to })
   const [range, setRange] = useState<DateRange | undefined>();
   const [filter, setFilter] = useState<string>();
   useEffect(() => {
@@ -40,12 +41,14 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     router.replace(router.pathname, undefined, { shallow: true });
   }
 
+  console.log({ data })
+
   return (
     <div className={styles.container}>
       <HeadTag />
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
-        <h4 className={styles.description}>Discover interesting changes</h4>
+        <h4 className={styles.description}>Track added and deleted datasets on Socrata government data portals</h4>
         <h6 style={{ textAlign: 'center' }}><Link href="/heatmap">heatmap</Link></h6>
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
@@ -98,20 +101,15 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
             </h2>
           }
           {
-            added && <>
-              <div style={{ textAlign: 'right' }}><p><em>{added.rows.length} added</em></p></div>
-              <h4>Added</h4>
-              <DiffList data={added} error={addedError} filter={filter} />
-            </>
-          }
-          {
-            deleted && <>
+            data && <>
+              <h4>Datasets</h4>
               <div style={{ textAlign: 'right' }}>
-                {deleted?.success && <p><em>{deleted.rows.length} deleted</em></p>}
+                {data?.success && <p><em>{data.rows.length} records</em></p>}
               </div>
-              <h4>Deleted</h4>
-              {deletedError && <h3>Error querying deleted datasets</h3>}
-              {pluckDDNSuccess(deleted)?.map(({ domain }, index) => <div key={index}>{domain}</div>)}
+              <div>
+                {error && <h3>Error querying datasets</h3>}
+                {data?.success && <DatasetList data={data.rows} />}
+              </div>
             </>
           }
         </main >

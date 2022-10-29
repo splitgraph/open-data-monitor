@@ -1,0 +1,15 @@
+.dataset {
+  /* display: flex; */
+  border-radius: 4px;
+}
+
+.datasetsList {
+  display: flex;
+
+}
+.left {
+  width: 70%;
+}
+.right {
+  width: 30%;
+}

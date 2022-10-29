@@ -1,6 +1,12 @@
 import useSWR from 'swr';
-import { ddnFetcher, getAddedDatasetsQuery, getDeletedDatasetsQuery } from './data'
+import { ddnFetcher, getAddedDeletedDatasetsQuery } from './data'
 import { type Tag } from './data'
+import { type DatasetType } from './components/DatasetList'
+
+interface DDNResponse {
+  success: string;
+  rows: Array<DatasetType>;
+}
 
 interface UseDatasetsParams {
   tags: Tag[] | undefined;
@@ -12,20 +18,14 @@ const useDatasets = ({ tags, from, to }: UseDatasetsParams) => {
   if (typeof from === 'object' || typeof to === 'object') {
     throw Error('invalid query params')
   }
-  const { data: added, error: addedError, } = useSWR(
+  const { data, error } = useSWR<DDNResponse>(
     (!!tags && !!from && !!to)
-      ? getAddedDatasetsQuery(from, to)
-      : null,
-    ddnFetcher
-  )
-  const { data: deleted, error: deletedError } = useSWR(
-    (!!tags && !!from && !!to)
-      ? getDeletedDatasetsQuery(from, to)
+      ? getAddedDeletedDatasetsQuery(from, to)
       : null,
     ddnFetcher
   );
 
-  return { added, addedError, deleted, deletedError }
+  return { data, error }
 }
 
 export default useDatasets;

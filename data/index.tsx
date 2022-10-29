@@ -1,6 +1,6 @@
 import { request, gql } from 'graphql-request'
 
-const UNIFIED_GQL_API = 'https://api.splitgraph.com/gql/cloud/unified/graphql';
+export const UNIFIED_GQL_API = 'https://api.splitgraph.com/gql/cloud/unified/graphql';
 const DDN_API = 'https://data.splitgraph.com/sql/query/ddn';
 
 export interface Tag {
@@ -51,68 +51,28 @@ export const filterDates = (nodes: Tag[]): string[] => {
 }
 
 /**
- * Return a SQL query that shows datasets added to Socrata in the time range
- * between the specified tags
- * 
- * Inspired by https://www.splitgraph.com/docs/query/time-travel-queries
+ * Return a SQL query that shows datasets added and deleted from Socrata during
+ *  the given time range (i.e. between the specified tags)
  *
  * @param {string} oldTag the "old" tag
  * @param {string} newTag the "new" tag
  * @returns {string} SQL query intended for DDN
  */
-export const getAddedDatasetsQuery = (oldTag: string, newTag: string) =>
-  `SELECT
-  new.domain AS domain,
-  new.id AS id,
-  new.name AS name,
-  new.description AS desc,
-  new.updated_at,
-  new.created_at,
-  new.permalink
-FROM
-  "splitgraph/socrata:${oldTag}".datasets old
-RIGHT JOIN
-  "splitgraph/socrata:${newTag}".datasets new
-ON
-  old.id = new.id
-WHERE
-  old.id IS NOT DISTINCT FROM NULL`
-
-// export const getNewDatasetsQuery2 = (oldTag: string, newTag: string) => `
-// SELECT 
-//   DISTINCT(domain),
-//   new.id AS id,
-//   new.name AS name,
-//   new.updated_at,
-//   new.created_at
-// FROM 
-//   "splitgraph/socrata:${newTag}".datasets new
-// WHERE 
-//   domain NOT IN (SELECT DISTINCT(domain) 
-//     FROM "splitgraph/socrata:${oldTag}".datasets)
-// `
-
-/**
- * Return a SQL query that shows datasets deleted from Socrata during the given
- * time range (i.e. between the specified tags)
- * 
- * Via https://mattermost.splitgraph.io/splitgraph-core/pl/d497yyxubpdstkqzs4f5a4f36y
- *
- * @param {string} oldTag the "old" tag
- * @param {string} newTag the "new" tag
- * @returns {string} SQL query intended for DDN
- */
-export const getDeletedDatasetsQuery = (oldTag: string, newTag: string) =>
-  `SELECT
-    distinct old.domain AS domain
-FROM
-    "splitgraph/socrata:${oldTag}".datasets old
-LEFT JOIN
-    "splitgraph/socrata:${newTag}".datasets new
-ON
-    old.domain = new.domain
-WHERE
-  new.domain is null`
+export const getAddedDeletedDatasetsQuery = (oldTag: string, newTag: string) =>
+  `WITH old AS MATERIALIZED(SELECT * FROM "splitgraph/socrata:${oldTag}".datasets),
+  new AS MATERIALIZED(SELECT * FROM "splitgraph/socrata:${newTag}".datasets)
+SELECT
+  COALESCE(old.domain, new.domain) AS domain,
+  COALESCE(old.id, new.id) AS id,
+  COALESCE(old.name, new.name) AS name,
+  COALESCE(old.description, new.description) AS description,
+  COALESCE(old.created_at, new.created_at) AS created_at,
+  COALESCE(old.updated_at, new.updated_at) AS updated_at,
+  old.id IS NULL AS is_added   -- TRUE if added, FALSE if deleted
+FROM old FULL OUTER JOIN new
+ON old.domain = new.domain AND old.id = new.id
+WHERE old.id IS NULL OR new.id IS NULL -- Only include added/deleted datasets
+ORDER BY domain, name, is_added`
 
 export const ddnFetcher = (query: string) => fetch(DDN_API, {
   method: "POST",
@@ -123,14 +83,6 @@ export const ddnFetcher = (query: string) => fetch(DDN_API, {
     sql: query
   })
 }).then((res) => res.json());
-
-export const buildAddedDatasetsQuery = (tags: string[], leftIndex: number, rightIndex: number): string => {
-  return getAddedDatasetsQuery(tags[leftIndex], tags[rightIndex])
-}
-
-export const buildDeletedDatasetsQuery = (tags: string[], leftIndex: number, rightIndex: number): string => {
-  return getDeletedDatasetsQuery(tags[leftIndex], tags[rightIndex])
-}
 
 export const buildValues = (rawTagsData: SocrataTagsGQL | undefined): string[] => {
   return rawTagsData && filterDates(rawTagsData?.tags?.nodes) || [];
