@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
-import Link from 'next/link'
 import { SWRConfig } from 'swr'
 import { type DateRange } from 'react-day-picker'
-import styles from '../styles/Home.module.css'
-import { HeadTag } from '../components/HeadTag'
-import { DiffList } from '../components/Diffs'
-import { unifiedFetcher, SocrataRepoTagsQuery, type Tag } from '../data/index'
-import RangePicker, { dateifyTag } from '../components/DayPicker'
-import { Popover } from '../components/Popover'
+import { unifiedFetcher, SocrataRepoTagsQuery, filterDates } from '../data/index'
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
+import styles from '../styles/Home.module.css'
+import { Popover } from '../components/Popover'
+import { HeadTag } from '../components/HeadTag'
+import RangePicker, { dateifyTag } from '../components/DayPicker'
 import Button from '../components/Button'
-import { filterDates } from '../data'
 import DatasetList from '../components/DatasetList'
+import Picker from '../components/Picker'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
@@ -22,7 +20,6 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const { tags, tagsError } = useTags();
   const { data, error } = useDatasets({ tags, from, to })
   const [range, setRange] = useState<DateRange | undefined>();
-  const [filter, setFilter] = useState<string>();
   useEffect(() => {
     // if query params from/to exist, we should call setRange() so DayPicker's
     // initial date range matches the query params
@@ -41,15 +38,16 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     router.replace(router.pathname, undefined, { shallow: true });
   }
 
-  console.log({ data })
-
   return (
     <div className={styles.container}>
       <HeadTag />
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
-        <h4 className={styles.description}>Track added and deleted datasets on Socrata government data portals</h4>
-        <h6 style={{ textAlign: 'center' }}><Link href="/heatmap">heatmap</Link></h6>
+        <h3 className={styles.description}>Track added and deleted datasets on Socrata government data portals</h3>
+        <div className={styles.poweredBy}>
+          Powered by <a href="https://www.splitgraph.com">Splitgraph</a>.
+          <br /><br />
+        </div>
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
           <div style={{ textAlign: 'center' }}>
@@ -77,17 +75,6 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
                 >
                   <Button>✏️ Choose Dates</Button>
                 </Popover>
-                &nbsp;
-                <Popover
-                  render={({ close }) => (
-                    <div style={{ background: 'gray', boxShadow: 'rgb(0 0 0 / 20%) 0px 11px 15px -7px, rgb(0 0 0 / 14%) 0px 24px 38px 3px, rgb(0 0 0 / 12%) 0px 9px 46px 8px' }}>
-                      <input value={filter} onChange={(e) => setFilter(e.target.value)} />
-                      <p>TODO: derivative dataset: persist namespace in record</p>
-                      <Button onClick={() => close()}>Submit</Button>
-                    </div>
-                  )}>
-                  <Button>⛏ Filter by namespace</Button>
-                </Popover>
                 <>&nbsp;<Button onClick={resetQueryParams}>🗑 Reset</Button></>
               </>
             }
@@ -97,12 +84,12 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
               <span className={styles.pulseWrapper}>
                 <span className={styles.pulse}>👆</span>
               </span>
-              Choose a date range
+              Choose
             </h2>
           }
+          <Picker />
           {
             data && <>
-              <h4>Datasets</h4>
               <div style={{ textAlign: 'right' }}>
                 {data?.success && <p><em>{data.rows.length} records</em></p>}
               </div>
@@ -114,10 +101,11 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
           }
         </main >
       </SWRConfig >
-      <footer className={styles.footer} >
+      <footer className={styles.footer}>
         <a href="https://www.splitgraph.com" target="_blank" rel="noopener noreferrer">
-          Powered by Splitgraph
+          Powered by Splitgraph.
         </a>
+        Questions? Tweet us <a href="https://twitter.com/intent/tweet?text=@splitgraph">@splitgraph</a>
       </footer>
     </div >
   )
