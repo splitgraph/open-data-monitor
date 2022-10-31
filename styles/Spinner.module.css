@@ -1,7 +1,7 @@
 .loader {
   width: 24px;
   height: 24px;
-  display: inline-block;
+  display: inline;
   position: relative;
 }
 .loader::after,
@@ -11,7 +11,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #FFF;
+  background: gray;
   position: absolute;
   left: 0;
   top: 0;
