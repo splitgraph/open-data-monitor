@@ -1,4 +1,4 @@
-import React, { cloneElement, MouseEventHandler, useMemo, useState } from "react";
+import React, { cloneElement, useMemo, useState } from "react";
 import { useRouter } from 'next/router'
 import {
   Placement,
@@ -10,7 +10,6 @@ import {
   useInteractions,
   useRole,
   useDismiss,
-  useId,
   useClick,
   FloatingFocusManager
 } from "@floating-ui/react-dom-interactions";
