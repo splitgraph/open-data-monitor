@@ -43,7 +43,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
       <HeadTag />
       <SWRConfig value={{ fallback }}>
         <h2 className={styles.title}>SocFeed</h2>
-        <h3 className={styles.description}>Track added and deleted datasets on Socrata government data portals</h3>
+        <p className={styles.description}>Track added and deleted datasets on Socrata government data portals</p>
         <div className={styles.poweredBy}>
           Powered by <a href="https://www.splitgraph.com">Splitgraph</a>.
           <br /><br />
