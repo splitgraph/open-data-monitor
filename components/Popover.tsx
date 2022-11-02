@@ -54,7 +54,6 @@ export const Popover = ({ children, render, placement }: Props) => {
       {open && (
         <FloatingFocusManager
           context={context}
-          modal={true}
           order={["reference", "content"]}
           returnFocus={false}
         >
