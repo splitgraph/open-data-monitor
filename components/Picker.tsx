@@ -2,8 +2,8 @@ import styles from './Picker.module.css'
 import Button from './Button'
 
 interface PickerProps {
-  goPrevious: () => {};
-  goNext: () => {};
+  goPrevious: () => void;
+  goNext: () => void;
 }
 const Picker = ({ goPrevious, goNext }: PickerProps) => {
   return (

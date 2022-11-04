@@ -12,8 +12,7 @@ const SplitgraphRepoUrl = ({ id, domain, name }: SocrataDatasetID) => {
     }
   }, [url])
   if (isLoading) {
-    return (
-      <span className={styles.loader}></span>)
+    return <span className={styles.loader} />
   }
   if (error) {
     return <span>Unable to fetch repo URL.</span>

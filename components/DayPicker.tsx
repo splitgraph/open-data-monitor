@@ -13,7 +13,6 @@ export const tagifyDate = (date: Date): string => {
 export const dateifyTag = (i: string | Array<string>) => {
   // Handle duped query params case
   if (typeof i === 'object') {
-    console.error({ i })
     throw new Error("Should be only one query param for from/to")
   }
   // Handle 'too long' tag - should be e.g. `20210101` not `20210101-1234`
