@@ -54,6 +54,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
         query: newQueryParams,
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tags])
 
 
@@ -166,7 +167,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
               </div>
               <div>
                 {error && <h3>Error querying datasets</h3>}
-                <DatasetList data={pluckDDNSuccess(data)} />
+                <DatasetList data={pluckDDNSuccess(data) || []} />
               </div>
             </>
           }
