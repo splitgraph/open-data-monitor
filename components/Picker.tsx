@@ -1,10 +1,14 @@
 import styles from './Picker.module.css'
 import Button from './Button'
 
-const Picker = () => {
+interface PickerProps {
+  goPrevious: () => {};
+  goNext: () => {};
+}
+const Picker = ({ goPrevious, goNext }: PickerProps) => {
   return (
     <div className={styles.root}>
-      <Button>← Previous</Button>
+      <Button onClick={goPrevious}>← Previous</Button>
       <span className={styles.padding}>&nbsp;</span>
       <select className={styles.select}>
         <option>Day</option>
@@ -12,7 +16,7 @@ const Picker = () => {
         <option>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-      <Button >Next →</Button>
+      <Button onClick={goNext}>Next →</Button>
     </div>
   )
 }

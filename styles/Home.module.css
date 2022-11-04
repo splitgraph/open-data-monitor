@@ -47,7 +47,8 @@
 }
 
 .title,
-.description {
+.description,
+.centered {
   text-align: center;
 }
 

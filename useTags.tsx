@@ -8,11 +8,13 @@ import {
 /** Fetch all Socrata tags via Unified GQL API */
 const useTags = () => {
   const { data: tagsData, error: tagsError } = useSWR<SocrataTagsGQL>(SocrataRepoTagsQuery, unifiedFetcher)
-  const [tags, setTags] = useState<Tag[]>();
+  const [tags, setTags] = useState<string[]>();
 
   useEffect(() => {
     if (tagsData) {
-      setTags(tagsData.tags.nodes)
+      console.log({ tagsData })
+      setTags(tagsData.tags.nodes.map(({ tag }) => tag).sort())
+      console.log({ tags })
     }
   }, [tagsData])
 

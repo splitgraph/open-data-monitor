@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
@@ -13,6 +13,8 @@ import RangePicker, { dateifyTag } from '../components/DayPicker'
 import Button from '../components/Button'
 import DatasetList from '../components/DatasetList'
 import Picker from '../components/Picker'
+
+
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
@@ -34,8 +36,45 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     // eslint-disable-next-line
     [])
 
+  const showToday = useCallback(() => {
+    if (!tags) {
+      return;
+    } else if (tags.length > 1) {
+      console.log('router.query', router.query)
+      const dateTags = filterDates(tags).sort()
+      const from = dateTags.slice(-2, -1)[0]
+      const to = dateTags.slice(-1)[0]
+      setRange({
+        from: dateifyTag(from),
+        ...(to && { to: dateifyTag(to) })
+      })
+      const newQueryParams = {
+        ...router.query,
+        from: from,
+        to: to
+      }
+      router.replace({
+        pathname: router.pathname,
+        query: newQueryParams,
+      })
+    }
+  }, [tags])
+
+
+  /** We want to default to showing the most recent and most recent - 1 tags */
+  useEffect(() => {
+    showToday();
+  }, [tags, showToday])
+
   const resetQueryParams = () => {
     router.replace(router.pathname, undefined, { shallow: true });
+  }
+  console.log({ tags })
+
+  const goPrevious = () => {
+    if (from) {
+      if (tags?.find(from)) { }
+    }
   }
 
   return (
@@ -50,7 +89,8 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
         </div>
         <main className={styles.main}>
           {tagsError && <h3>Unable to find tags</h3>}
-          <div style={{ textAlign: 'center' }}>
+          {/*           
+          <div className={styles.centered}>
             {!!tags?.length &&
               <>
                 <Popover
@@ -66,9 +106,9 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
                           setRange({ from, to })
                           close(from, to)
                         }}>🤷 Just choose something for me</Button>&nbsp;
-                        <Button onClick={() => {
-                          close(range?.from, range?.to)
-                        }}>✅ Submit</Button>
+                        <Button onClick={() => { close(range?.from, range?.to) }}>
+                          ✅ Submit
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -80,14 +120,15 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
             }
           </div>
           {
-            !from && <h2 style={{ textAlign: 'center' }}>
+            !from && <h2 className={styles.centered}>
               <span className={styles.pulseWrapper}>
                 <span className={styles.pulse}>👆</span>
               </span>
               Choose
             </h2>
-          }
-          <Picker />
+          } */}
+          {to && <h4 className={styles.centered}>{new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', }).format(dateifyTag(to))}</h4>}
+          <Picker goPrevious={() => { }} goNext={() => { }} />
           {
             data && <>
               <div style={{ textAlign: 'right' }}>

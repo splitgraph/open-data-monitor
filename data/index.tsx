@@ -46,8 +46,8 @@ export const unifiedFetcher = (query: string) => request(UNIFIED_GQL_API, query)
  * I observed that "20220822" yields diffs but "20220822-180102"
  * does not. Thus filter for 'day' tags
  */
-export const filterDates = (nodes: Tag[]): string[] => {
-  return nodes?.map(({ tag }) => tag).filter((n: string) => n.length === 8)
+export const filterDates = (tags: string[]): string[] => {
+  return tags.filter((n: string) => n.length === 8)
 }
 
 /**

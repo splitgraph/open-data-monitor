@@ -9,7 +9,7 @@ interface DDNResponse {
 }
 
 interface UseDatasetsParams {
-  tags: Tag[] | undefined;
+  tags: string[] | undefined;
   from: string | string[] | undefined;
   to: string | string[] | undefined;
 }
