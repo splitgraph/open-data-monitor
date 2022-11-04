@@ -28,15 +28,14 @@ const HeatmapPage = () => {
   }
 
   useEffect(() => {
-    const tagsArr = tags?.map(({ tag }) => tag)
     const valuesAndDays = new Map<string, number>();
-    tagsArr?.forEach(tag => {
+    tags?.forEach(tag => {
       if (tag.length === 8) {
         valuesAndDays.set(tag, 1)
       }
     })
 
-    tagsArr?.forEach(tag => {
+    tags?.forEach(tag => {
       if (tag.length === 15) {
         const rootTag = tag.slice(0, 8);
         // @ts-ignore

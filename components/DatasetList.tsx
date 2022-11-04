@@ -21,7 +21,6 @@ interface RolledUpDatasets {
 const rollupData = (rows: Array<DatasetType>): RolledUpDatasets => {
   let result: any = {};
   if (rows) {
-    console.log({ rows })
     rows?.forEach(({ domain, ...rest }) => {
       if (!result[domain]) {
         result[domain] = []

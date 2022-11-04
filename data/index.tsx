@@ -83,7 +83,3 @@ export const ddnFetcher = (query: string) => fetch(DDN_API, {
     sql: query
   })
 }).then((res) => res.json());
-
-export const buildValues = (rawTagsData: SocrataTagsGQL | undefined): string[] => {
-  return rawTagsData && filterDates(rawTagsData?.tags?.nodes) || [];
-}
