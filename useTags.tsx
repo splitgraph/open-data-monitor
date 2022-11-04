@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import {
   type SocrataTagsGQL, type Tag,
-  SocrataRepoTagsQuery, unifiedFetcher
+  SocrataRepoTagsQuery, unifiedFetcher, filterDates
 } from './data'
 
 /** Fetch all Socrata tags via Unified GQL API */
@@ -12,9 +12,8 @@ const useTags = () => {
 
   useEffect(() => {
     if (tagsData) {
-      console.log({ tagsData })
-      setTags(tagsData.tags.nodes.map(({ tag }) => tag).sort())
-      console.log({ tags })
+      const filteredDates = filterDates(tagsData.tags.nodes.map(({ tag }) => tag)).sort()
+      setTags(filteredDates)
     }
   }, [tagsData])
 
