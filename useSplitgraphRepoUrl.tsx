@@ -7,7 +7,6 @@ import { SplitgraphURLQuery, UNIFIED_GQL_API } from './data'
 const SPLITGRAPH_URL = 'https://www.splitgraph.com/'
 
 const fetcher = (query: string, variables: any) => {
-  console.log({ query, variables })
   return request(UNIFIED_GQL_API, query, variables)
 }
 
