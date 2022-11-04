@@ -7,47 +7,43 @@ import { unifiedFetcher, SocrataRepoTagsQuery, filterDates } from '../data/index
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
 import styles from '../styles/Home.module.css'
+import spinnerStyles from '../styles/Spinner.module.css'
 import { Popover } from '../components/Popover'
 import { HeadTag } from '../components/HeadTag'
 import RangePicker, { dateifyTag } from '../components/DayPicker'
 import Button from '../components/Button'
 import DatasetList from '../components/DatasetList'
 import Picker from '../components/Picker'
-
-
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
   const { from, to } = router.query;
   const { tags, tagsError } = useTags();
   const { data, error } = useDatasets({ tags, from, to })
-  const [range, setRange] = useState<DateRange | undefined>();
-  useEffect(() => {
-    // if query params from/to exist, we should call setRange() so DayPicker's
-    // initial date range matches the query params
-    if (from && to) {
-      setRange({
-        from: dateifyTag(from),
-        ...(to && { to: dateifyTag(to) })
-      })
-    }
-  },
-    // Empty array b/c we only want to sync once, at init time
-    // eslint-disable-next-line
-    [])
+  // const [range, setRange] = useState<DateRange | undefined>();
+  // useEffect(() => {
+  //   // if query params from/to exist, we should call setRange() so DayPicker's
+  //   // initial date range matches the query params
+  //   if (from && to) {
+  //     setRange({
+  //       from: dateifyTag(from),
+  //       ...(to && { to: dateifyTag(to) })
+  //     })
+  //   }
+  // },
+  //   // Empty array b/c we only want to sync once, at init time
+  //   // eslint-disable-next-line
+  //   [])
 
   const showToday = useCallback(() => {
     if (!tags) {
       return;
     } else if (tags.length > 1) {
-      console.log('router.query', router.query)
       const dateTags = filterDates(tags).sort()
       const from = dateTags.slice(-2, -1)[0]
       const to = dateTags.slice(-1)[0]
-      setRange({
-        from: dateifyTag(from),
-        ...(to && { to: dateifyTag(to) })
-      })
       const newQueryParams = {
         ...router.query,
         from: from,
@@ -69,11 +65,49 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const resetQueryParams = () => {
     router.replace(router.pathname, undefined, { shallow: true });
   }
-  console.log({ tags })
 
+  /** Given a date range, go back "minus one" tag.
+   * This may not necessarily be a 24 hour period, rather just the previous array member.
+   */
   const goPrevious = () => {
-    if (from) {
-      if (tags?.find(from)) { }
+    if (typeof from !== 'string') {
+      throw new Error('Invalid URL. Please ensure you have singleton query params')
+    }
+    if (from && tags && tags.length > 1) {
+      const oldFromIndex = tags?.findIndex((value) => value === from)
+      const oldToIndex = tags?.findIndex((value) => value === to)
+      if (oldFromIndex > 0 && oldToIndex > 1) {
+        const newQueryParams = {
+          ...router.query,
+          from: tags[oldFromIndex - 1],
+          to: tags[oldToIndex - 1]
+        }
+        router.replace({
+          pathname: router.pathname,
+          query: newQueryParams,
+        })
+      }
+
+    }
+  }
+  const goNext = () => {
+    if (typeof from !== 'string') {
+      throw new Error('Invalid URL. Please ensure you have singleton query params')
+    }
+    if (from && tags && tags.length > 1) {
+      const oldFromIndex = tags?.findIndex((value) => value === from)
+      const oldToIndex = tags?.findIndex((value) => value === to)
+      if (oldFromIndex < tags.length - 2 && oldToIndex < tags.length - 1) {
+        const newQueryParams = {
+          ...router.query,
+          from: tags[oldFromIndex + 1],
+          to: tags[oldToIndex + 1]
+        }
+        router.replace({
+          pathname: router.pathname,
+          query: newQueryParams,
+        })
+      }
     }
   }
 
@@ -81,14 +115,8 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     <div className={styles.container}>
       <HeadTag />
       <SWRConfig value={{ fallback }}>
-        <h2 className={styles.title}>SocFeed</h2>
-        <p className={styles.description}>Track added and deleted datasets on Socrata government data portals</p>
-        <div className={styles.poweredBy}>
-          Powered by <a href="https://www.splitgraph.com">Splitgraph</a>.
-          <br /><br />
-        </div>
+        <Header />
         <main className={styles.main}>
-          {tagsError && <h3>Unable to find tags</h3>}
           {/*           
           <div className={styles.centered}>
             {!!tags?.length &&
@@ -128,7 +156,9 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
             </h2>
           } */}
           {to && <h4 className={styles.centered}>{new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', }).format(dateifyTag(to))}</h4>}
-          <Picker goPrevious={() => { }} goNext={() => { }} />
+          <Picker goPrevious={goPrevious} goNext={goNext} />
+          {tagsError && <h3>Error: unable to fetch tags</h3>}
+          {!data && !error && <div className={styles.centerSpinner}> <div className={`${spinnerStyles.loader}`} /></div>}
           {
             data && <>
               <div style={{ textAlign: 'right' }}>
@@ -136,19 +166,14 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
               </div>
               <div>
                 {error && <h3>Error querying datasets</h3>}
-                {data?.success && <DatasetList data={data.rows} />}
+                <DatasetList data={pluckDDNSuccess(data)} />
               </div>
             </>
           }
-        </main >
-      </SWRConfig >
-      <footer className={styles.footer}>
-        <a href="https://www.splitgraph.com" target="_blank" rel="noopener noreferrer">
-          Powered by Splitgraph.
-        </a>
-        Questions? Tweet us <a href="https://twitter.com/intent/tweet?text=@splitgraph">@splitgraph</a>
-      </footer>
-    </div >
+        </main>
+      </SWRConfig>
+      <Footer />
+    </div>
   )
 }
 
