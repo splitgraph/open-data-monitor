@@ -1,0 +1,35 @@
+.parent {
+  display: grid;
+  grid-template: auto 1fr auto / auto 1fr auto;
+  padding: 1rem;
+}
+
+.header {
+  padding: 2rem;
+  grid-column: 1 / 4;
+  background-color: aliceblue;
+  padding: 1rem;
+}
+
+.leftSide {
+  grid-column: 1 / 2;
+  background-color: beige;
+  padding: 1rem;
+}
+
+.main {
+  grid-column: 2 / 3;
+  padding: 1rem;
+}
+
+.rightSide {
+  grid-column: 3 / 4;
+  background-color: darkgoldenrod;
+  padding: 1rem;
+}
+
+.footer {
+  grid-column: 1 / 4;
+  background-color: aqua;
+  padding: 1rem;
+}
