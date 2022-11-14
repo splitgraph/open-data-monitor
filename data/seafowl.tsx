@@ -1,3 +1,4 @@
+import { type BareFetcher } from 'swr';
 const SEAFOWL_API = 'https://seafowl-socrata.fly.dev/q'
 
 /**
@@ -5,6 +6,7 @@ const SEAFOWL_API = 'https://seafowl-socrata.fly.dev/q'
  * @param from a tag provided by SocrataRepoTagsQuery (shouldn't be arbitrary)
  * @param to a subsequent tag provided by SocrataRepoTagsQuery (shouldn't be arbitrary)
  * @returns  Array<Dataset>, e.g. [{ domain, id, name, desc, created_at, updated_at, is_added }]
+ * TODO probably needs to take four params
  */
 export const fromToDiff = (from: string, to: string) =>
   `WITH 
@@ -82,6 +84,18 @@ WHERE d.domain = '${domain}'
 GROUP BY 1
 ORDER BY 1 ASC`
 
+export const monthlyDiff = () =>
+  `SELECT
+  month,
+  d.domain,
+  d.name,
+  is_added,
+  id,
+  d.description
+FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
+ON m.id = d.id
+ORDER BY 1, 2, 3`
+
 
 export const heatmap = (domain: string = 'data.cdc.gov') =>
   `SELECT
@@ -93,13 +107,20 @@ GROUP BY 1
 ORDER BY 1 ASC`
 
 
-export const seafowlFetcher = (query: string) => fetch(SEAFOWL_API, {
-  method: "POST",
-  headers: { "content-type": "application/json" },
-  body: JSON.stringify({ query })
-}).then(async (response) => {
-  const responseText = await response.text();
-  return responseText ? responseText.trim().split("\n").map(JSON.parse as any) : [];
-}).catch((reason) => {
-  console.error(reason)
-});
+export interface AddedRemovedWeek {
+  added: number;
+  removed: number;
+  week: string;
+}
+//@ts-ignore TODO figure out where we should import PublicConfiguration from
+export const seafowlFetcher = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
+  fetch(SEAFOWL_API, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query })
+  }).then(async (response) => {
+    const responseText = await response.text();
+    return responseText ? responseText.trim().split("\n").map(JSON.parse as any) : [];
+  }).catch((reason) => {
+    console.error(reason)
+  });
