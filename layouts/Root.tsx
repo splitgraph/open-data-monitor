@@ -1,6 +1,10 @@
+import React from 'react'
 import styles from './Root.module.css'
 
-const RootLayout = ({ children }) =>
+interface RootLayoutProps {
+  children: React.ReactNode
+}
+const RootLayout = ({ children }: RootLayoutProps) =>
   <div className={styles.parent}>
     <header className={`${styles.header} section coral`}>Header</header>
     <div className={`${styles.leftSide} section blue`}>Left Sidebar</div>
