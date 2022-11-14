@@ -1,5 +1,8 @@
 import useSWR from "swr"
-import { seafowlFetcher, fromToDiff, dailyDiff, weeklyDiff, weeklyDiffByDomain, weeklyDiffDomainTotals, heatmap } from "../data/seafowl";
+import {
+  seafowlFetcher, fromToDiff, dailyDiff, weeklyDiff, monthlyDiff,
+  weeklyDiffByDomain, weeklyDiffDomainTotals, heatmap
+} from "../data/seafowl";
 
 const FromToDiff = () => {
   const { data, error } = useSWR(fromToDiff, seafowlFetcher);
@@ -40,6 +43,20 @@ const WeeklyDiff = () => {
     </div>
   )
 }
+
+const MonthlyDiff = () => {
+  const { data, error } = useSWR(monthlyDiff, seafowlFetcher);
+
+  return (
+    <div style={{ width: '400px', overflow: 'hidden' }}>
+      <h1>MonthlyDiff</h1>
+      <pre>
+        {JSON.stringify(data, null, 2)}
+      </pre>
+    </div>
+  )
+}
+
 
 const WeeklyDiffByDomain = () => {
   const domain = 'data.cdc.gov';
@@ -91,6 +108,7 @@ const Page = () => {
       <FromToDiff />
       <DailyDiff />
       <WeeklyDiff />
+      <MonthlyDiff />
       <WeeklyDiffByDomain />
       <WeeklyDiffDomainTotals />
       <Heatmap />
