@@ -1,12 +1,6 @@
 import Link from 'next/link';
 import useSWR from 'swr'
-import { seafowlFetcher, weeklyDiffByDomain } from '../data/seafowl';
-
-interface AddedRemovedWeek {
-  added: number;
-  removed: number;
-  week: string;
-}
+import { seafowlFetcher, weeklyDiffByDomain, type AddedRemovedWeek } from '../data/seafowl';
 
 interface WeeklyDiffByDomainProps {
   domain: string;

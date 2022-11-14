@@ -3,15 +3,14 @@ import useSWR from 'swr'
 import { seafowlFetcher, weeklyDiff } from '../data/seafowl';
 import { type DatasetType } from './DatasetList'
 
-interface WeeklyDiffProps {
+interface MonthlyDiffProps {
   timestamp: string;
 }
 
 
-const WeeklyDiff = ({ timestamp }: WeeklyDiffProps) => {
+const MonthlyDiff = ({ timestamp }: MonthlyDiffProps) => {
   const { data, error } = useSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
-  const domains = new Set(data);
-  console.log({ data, domains })
+  console.log({ data })
 
   return (
     <div>
@@ -30,4 +29,4 @@ const WeeklyDiff = ({ timestamp }: WeeklyDiffProps) => {
   )
 }
 
-export default WeeklyDiff
+export default MonthlyDiff
