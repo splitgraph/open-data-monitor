@@ -2,40 +2,51 @@ import { useEffect, useCallback, useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
-import { type DateRange } from 'react-day-picker'
-import { unifiedFetcher, SocrataRepoTagsQuery, filterDates } from '../data/index'
+import { unifiedFetcher, SocrataRepoTagsQuery, filterDates, SocrataTagsGQL } from '../data/index'
 import useTags from '../useTags'
 import useDatasets from '../useDatasets'
 import styles from '../styles/Home.module.css'
 import spinnerStyles from '../styles/Spinner.module.css'
-import { Popover } from '../components/Popover'
 import { HeadTag } from '../components/HeadTag'
-import RangePicker, { dateifyTag } from '../components/DayPicker'
-import Button from '../components/Button'
+import { dateifyTag } from '../components/DayPicker'
 import DatasetList from '../components/DatasetList'
 import Picker from '../components/Picker'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 
+export type RangeLength = 1 | 7 | 30
+
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
+  console.log({ fallback })
   const router = useRouter();
   const { from, to } = router.query;
   const { tags, tagsError } = useTags();
   const { data, error } = useDatasets({ tags, from, to })
-  // const [range, setRange] = useState<DateRange | undefined>();
-  // useEffect(() => {
-  //   // if query params from/to exist, we should call setRange() so DayPicker's
-  //   // initial date range matches the query params
-  //   if (from && to) {
-  //     setRange({
-  //       from: dateifyTag(from),
-  //       ...(to && { to: dateifyTag(to) })
-  //     })
-  //   }
-  // },
-  //   // Empty array b/c we only want to sync once, at init time
-  //   // eslint-disable-next-line
-  //   [])
+  const [desiredRangeLength, setDesiredRangeLength] = useState<RangeLength>(1);
+
+  /** keep 'to', but try to change 'from' to 7 or 30 items less */
+  const setRangeOrNextBest = (rangeLength: RangeLength) => {
+    setDesiredRangeLength(rangeLength);
+    if (typeof from !== 'string') {
+      throw new Error('Invalid URL. Please ensure you have singleton query params')
+    }
+    if (from && to && tags && tags.length > 1) {
+      const oldFromIndex = tags?.findIndex((value) => value === from)
+      // const oldToIndex = tags?.findIndex((value) => value === to)
+      if (oldFromIndex < 1) { return; }
+      if (oldFromIndex > rangeLength) {
+        const indexDiff = Math.min(rangeLength, oldFromIndex)
+        const newQueryParams = {
+          ...router.query,
+          from: tags[oldFromIndex - indexDiff],
+        }
+        router.replace({
+          pathname: router.pathname,
+          query: newQueryParams,
+        })
+      }
+    }
+  }
 
   const showToday = useCallback(() => {
     if (!tags) {
@@ -57,11 +68,12 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tags])
 
-
   /** We want to default to showing the most recent and most recent - 1 tags */
   useEffect(() => {
-    showToday();
-  }, [tags, showToday])
+    if (!from && !to) {
+      showToday();
+    }
+  }, [tags, showToday, from, to])
 
   const resetQueryParams = () => {
     router.replace(router.pathname, undefined, { shallow: true });
@@ -74,7 +86,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     if (typeof from !== 'string') {
       throw new Error('Invalid URL. Please ensure you have singleton query params')
     }
-    if (from && tags && tags.length > 1) {
+    if (from && to && tags && tags.length > 1) {
       const oldFromIndex = tags?.findIndex((value) => value === from)
       const oldToIndex = tags?.findIndex((value) => value === to)
       if (oldFromIndex > 0 && oldToIndex > 1) {
@@ -118,46 +130,13 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
       <SWRConfig value={{ fallback }}>
         <Header />
         <main className={styles.main}>
-          {/*           
-          <div className={styles.centered}>
-            {!!tags?.length &&
-              <>
-                <Popover
-                  render={({ close }) => (
-                    <div style={{ background: 'gray', boxShadow: 'rgb(0 0 0 / 20%) 0px 11px 15px -7px, rgb(0 0 0 / 14%) 0px 24px 38px 3px, rgb(0 0 0 / 12%) 0px 9px 46px 8px' }}>
-                      <RangePicker tags={tags} range={range} setRange={setRange} />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1em' }}>
-                        <Button onClick={() => {
-                          const randOffsetOf10 = Math.floor(Math.random() * 10 + 1)
-                          const filteredTags = filterDates(tags);
-                          const from = dateifyTag(filteredTags[filteredTags.length - 1 - randOffsetOf10])
-                          const to = dateifyTag(filteredTags[filteredTags.length - 1]);
-                          setRange({ from, to })
-                          close(from, to)
-                        }}>🤷 Just choose something for me</Button>&nbsp;
-                        <Button onClick={() => { close(range?.from, range?.to) }}>
-                          ✅ Submit
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                >
-                  <Button>✏️ Choose Dates</Button>
-                </Popover>
-                <>&nbsp;<Button onClick={resetQueryParams}>🗑 Reset</Button></>
-              </>
-            }
-          </div>
-          {
-            !from && <h2 className={styles.centered}>
-              <span className={styles.pulseWrapper}>
-                <span className={styles.pulse}>👆</span>
-              </span>
-              Choose
-            </h2>
-          } */}
           {to && <h4 className={styles.centered}>{new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', }).format(dateifyTag(to))}</h4>}
-          <Picker goPrevious={goPrevious} goNext={goNext} />
+          <Picker
+            goPrevious={goPrevious} goNext={goNext}
+            disabled={!data && !error}
+            desiredRangeLength={desiredRangeLength}
+            setDesiredRangeLength={setRangeOrNextBest}
+          />
           {tagsError && <h3>Error: unable to fetch tags</h3>}
           {!data && !error && <div className={styles.centerSpinner}> <div className={`${spinnerStyles.loader}`} /></div>}
           {
@@ -180,7 +159,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   // SSR fetch of all tags - always needed & independent of user-provided values
-  const rawTagsData = await unifiedFetcher(SocrataRepoTagsQuery)
+  const rawTagsData: SocrataTagsGQL = await unifiedFetcher(SocrataRepoTagsQuery)
 
   // pluck `data.tags.nodes`
   const { tags: { nodes } } = rawTagsData;
@@ -188,7 +167,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   return {
     props: {
       fallback: {
-        [SocrataRepoTagsQuery]: nodes,
+        [SocrataRepoTagsQuery]: nodes.map(({ tag }) => tag),
       }
     }
   }
