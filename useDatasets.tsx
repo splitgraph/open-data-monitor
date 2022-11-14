@@ -1,6 +1,5 @@
 import useSWR from 'swr';
 import { ddnFetcher, getAddedDeletedDatasetsQuery } from './data'
-import { type Tag } from './data'
 import { type DatasetType } from './components/DatasetList'
 
 interface DDNResponse {
