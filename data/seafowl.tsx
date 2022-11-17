@@ -43,6 +43,15 @@ FROM socrata.daily_diff dd INNER JOIN socrata.all_datasets d
 WHERE dd.day::text = '${timestamp}'
 ORDER BY 1, 3, 2`
 
+export interface DailyDiffResponse {
+  domain: string;
+  name: string;
+  is_added: boolean;
+  id: string;
+  description: string;
+}
+
+
 /**
  * Datasets added/deleted as of the given date + 7 days
  * @param timestamp Data
@@ -106,6 +115,132 @@ WHERE domain = '${domain}'
 GROUP BY 1
 ORDER BY 1 ASC`
 
+
+export const picker = (timestamp: string) =>
+  `(SELECT
+  day AS timestamp,
+  'prev_day' AS direction
+FROM socrata.daily_diff
+  WHERE day < '${timestamp}'::timestamp
+ORDER BY day DESC LIMIT 1)
+
+UNION ALL
+
+(SELECT
+  day AS timestamp,
+  'next_day' AS direction
+FROM socrata.daily_diff
+  WHERE day > '${timestamp}'::timestamp
+ORDER BY day ASC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  day AS timestamp,
+  'equivalent_day' AS direction
+FROM socrata.daily_diff
+  WHERE day <= '${timestamp}'::timestamp
+ORDER BY day DESC LIMIT 1)
+
+UNION ALL
+  
+  (SELECT
+  week AS timestamp,
+  'prev_week' AS direction
+FROM socrata.weekly_diff
+  WHERE week < '${timestamp}'::timestamp
+ORDER BY week DESC LIMIT 1)
+
+UNION ALL
+
+(SELECT
+  week AS timestamp,
+  'next_week' AS direction
+FROM socrata.weekly_diff
+  WHERE week > '${timestamp}'::timestamp
+ORDER BY week ASC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  week AS timestamp,
+  'equivalent_week' AS direction
+FROM socrata.weekly_diff
+  WHERE week <= '${timestamp}'::timestamp
+ORDER BY week DESC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  month AS timestamp,
+  'prev_month' AS direction
+FROM socrata.monthly_diff
+  WHERE month < '${timestamp}'::timestamp
+ORDER BY month DESC LIMIT 1)
+
+UNION ALL
+
+(SELECT
+  month AS timestamp,
+  'next_month' AS direction
+FROM socrata.monthly_diff
+  WHERE month > '${timestamp}'::timestamp
+ORDER BY month ASC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  month AS timestamp,
+  'equivalent_month' AS direction
+FROM socrata.monthly_diff
+  WHERE month <= '${timestamp}'::timestamp
+ORDER BY month DESC LIMIT 1)`
+
+// example response
+const examplePickerResponse = [
+  {
+    "direction": "equivalent_day",
+    "timestamp": "2022-11-02 00:00:00"
+  },
+  {
+    "direction": "prev_week",
+    "timestamp": "2022-10-31 00:00:00"
+  },
+  {
+    "direction": "equivalent_week",
+    "timestamp": "2022-10-31 00:00:00"
+  },
+  {
+    "direction": "prev_month",
+    "timestamp": "2022-11-01 00:00:00"
+  },
+  {
+    "direction": "equivalent_month",
+    "timestamp": "2022-11-01 00:00:00"
+  },
+  {
+    "direction": "prev_day",
+    "timestamp": "2022-11-02 00:00:00"
+  }
+]
+const responseObj = Object.fromEntries(examplePickerResponse.map(({ direction, timestamp }) => [direction, timestamp]))
+
+export enum Direction {
+  prev_day = "prev_day",
+  next_day = "next_day",
+  equivalent_day = "equivalent_day",
+  prev_week = "prev_week",
+  next_week = "next_week",
+  equivalent_week = "equivalent_week",
+  prev_month = "prev_month",
+  next_month = "next_month",
+  equivalent_month = "equivalent_month"
+}
+
+export interface TimestampDirection {
+  direction: Direction;
+  timestamp: string;
+}
 
 export interface AddedRemovedWeek {
   added: number;
