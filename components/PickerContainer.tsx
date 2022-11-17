@@ -1,0 +1,22 @@
+import useSWR from 'swr';
+import type { Dispatch, SetStateAction } from 'react';
+import { seafowlFetcher, picker } from '../data/seafowl'
+import Picker from './Picker'
+
+interface PickerContainerProps {
+  timestamp: string;
+  setTimestamp: Dispatch<SetStateAction<string>>;
+}
+
+const Seafowl = ({ timestamp, setTimestamp }: PickerContainerProps) => {
+  const { data, error } = useSWR(picker(timestamp), seafowlFetcher);
+
+  return (
+    <div>
+      {!!error && <h4>Sorry, an error occurred.</h4>}
+      <Picker timestamp={timestamp} setTimestamp={setTimestamp} data={data} />
+      <h4>{timestamp}</h4>
+    </div>
+  )
+}
+export default Seafowl
