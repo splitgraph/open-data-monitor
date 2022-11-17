@@ -196,35 +196,6 @@ FROM socrata.monthly_diff
   WHERE month <= '${timestamp}'::timestamp
 ORDER BY month DESC LIMIT 1)`
 
-// example response
-const examplePickerResponse = [
-  {
-    "direction": "equivalent_day",
-    "timestamp": "2022-11-02 00:00:00"
-  },
-  {
-    "direction": "prev_week",
-    "timestamp": "2022-10-31 00:00:00"
-  },
-  {
-    "direction": "equivalent_week",
-    "timestamp": "2022-10-31 00:00:00"
-  },
-  {
-    "direction": "prev_month",
-    "timestamp": "2022-11-01 00:00:00"
-  },
-  {
-    "direction": "equivalent_month",
-    "timestamp": "2022-11-01 00:00:00"
-  },
-  {
-    "direction": "prev_day",
-    "timestamp": "2022-11-02 00:00:00"
-  }
-]
-const responseObj = Object.fromEntries(examplePickerResponse.map(({ direction, timestamp }) => [direction, timestamp]))
-
 export enum Direction {
   prev_day = "prev_day",
   next_day = "next_day",
