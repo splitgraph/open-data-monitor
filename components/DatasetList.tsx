@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import Link from 'next/link'
 import Dataset from './Dataset';
 import styles from '../styles/Dataset.module.css';
+import { type DailyDiffResponse } from '../data/seafowl'
 
 export interface DatasetType {
   domain: string;
@@ -13,12 +14,12 @@ export interface DatasetType {
   is_added: boolean;
 }
 
-type DatasetNoDomain = Omit<DatasetType, "domain">
+type DatasetNoDomain = Omit<DailyDiffResponse, "domain">
 interface RolledUpDatasets {
   [domain: string]: Array<DatasetNoDomain>;
 }
 
-const rollupData = (rows: Array<DatasetType>): RolledUpDatasets => {
+const rollupData = (rows: Array<DailyDiffResponse>): RolledUpDatasets => {
   let result: any = {};
   if (rows) {
     rows?.forEach(({ domain, ...rest }) => {
@@ -32,7 +33,7 @@ const rollupData = (rows: Array<DatasetType>): RolledUpDatasets => {
 }
 
 interface DatasetListProps {
-  data: Array<DatasetType>;
+  data: Array<DailyDiffResponse>;
 }
 const DatasetList = ({ data }: DatasetListProps) => {
   const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data), [data]);
