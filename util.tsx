@@ -1,0 +1,9 @@
+/**
+ * Helper to convert JS Date() obj to a valid SQL timestamp
+ * Because new Date.getTime() returns UTC time anyway, SSR/CSR 
+ * timezone skew shouldn't matter
+ * 
+ * @returns string with a partial ISO date + hh:mm:ss zeros
+ */
+export const getUTCTodayTimestamp = () =>
+  `${new Date(new Date().getTime()).toISOString().slice(0, 10)} 00:00:00`
