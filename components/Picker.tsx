@@ -1,23 +1,32 @@
 import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
+import { useMemo } from 'react';
 import styles from './Picker.module.css'
 import Button from './Button'
 import { type RangeLength } from '../pages/index'
+import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
-  goPrevious: () => void;
-  goNext: () => void;
-  disabled: boolean;
-  desiredRangeLength: RangeLength;
-  setDesiredRangeLength: (value: RangeLength) => void;
+  timestamp: string;
+  setTimestamp: Dispatch<SetStateAction<string>>;
+  data: Array<TimestampDirection> | undefined;
 }
-const Picker = ({ goPrevious, goNext, disabled, desiredRangeLength, setDesiredRangeLength }: PickerProps) => {
-  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => setDesiredRangeLength(+event.target.value as RangeLength)
+const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
+  const response = useMemo(() =>
+    data ? Object.fromEntries(data.map(({ direction, timestamp }) => [direction, timestamp])) : {},
+    [data]);
+
+  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => event.target.value;
+
   return (
     <div className={styles.root}>
-      <Button onClick={goPrevious} disabled={disabled}>← Previous</Button>
+      <Button
+        onClick={() => setTimestamp(response.prev_day)}
+        disabled={!(Direction.prev_day in response)}
+      >← Previous</Button>
       <span className={styles.padding}>&nbsp;</span>
-      <select className={styles.select} disabled={disabled}
-        value={desiredRangeLength}
+      <select className={styles.select}
+        // disabled={disabled}
+        // value={desiredRangeLength}
         onChange={handleChange}
       >
         <option value={1}>Day</option>
@@ -25,7 +34,10 @@ const Picker = ({ goPrevious, goNext, disabled, desiredRangeLength, setDesiredRa
         <option value={30}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-      <Button onClick={goNext} disabled={disabled}>Next →</Button>
+      <Button
+        onClick={() => setTimestamp(response.next_day)}
+        disabled={!(Direction.next_day in response)}
+      >Next →</Button>
     </div>
   )
 }
