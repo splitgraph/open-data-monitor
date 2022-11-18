@@ -196,6 +196,14 @@ FROM socrata.monthly_diff
   WHERE month <= '${timestamp}'::timestamp
 ORDER BY month DESC LIMIT 1)`
 
+/** Get the 'latest known day' day
+ * Intended to more reliably give homepage content
+ * Defaulting to "today" assumes the Seafowl instance was updated today,
+ * which may not always be the case.
+ */
+export const latestKnownDay =
+  `SELECT MAX(day) as latest FROM socrata.daily_diff`
+
 export enum Direction {
   prev_day = "prev_day",
   next_day = "next_day",
