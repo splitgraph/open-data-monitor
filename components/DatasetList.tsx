@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 import Link from 'next/link'
 import Dataset from './Dataset';
 import styles from '../styles/Dataset.module.css';
+import spinnerStyles from '../styles/Spinner.module.css'
 import { type DailyDiffResponse } from '../data/seafowl'
+import useDailyDiff from '../useDailyDiff';
 
 export interface DatasetType {
   domain: string;
@@ -33,49 +35,61 @@ const rollupData = (rows: Array<DailyDiffResponse>): RolledUpDatasets => {
 }
 
 interface DatasetListProps {
-  data: Array<DailyDiffResponse>;
+  timestamp: string;
 }
-const DatasetList = ({ data }: DatasetListProps) => {
-  const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data), [data]);
+const DatasetList = ({ timestamp }: DatasetListProps) => {
+  const { data, error } = useDailyDiff(timestamp);
+  // useDailyDiff should always have a data b/c we are doing SSR. That's why as any b/c SWR
+  const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data as any), [data]);
 
   return (
-    <div className={styles.datasetsList}>
-      <div className={styles.left}>
-        {
-          Object.entries(rolledUp).map(([domain, datasets]) => {
-            return (
-              <a id={`${domain}`} key={domain} >
-                <div className={styles.datasetAndDomain}>
-                  <h3>{domain}</h3>
-                  {
-                    datasets.map(({ id, name, description, is_added }) =>
-                      <Dataset key={name + id}
-                        id={id} name={name} domain={domain}
-                        description={description} isAdded={is_added}
-                      />
-                    )
-                  }
-                </div>
-              </a>
+    <div>
+      {data &&
+        <div>
+          {data.length && <p><em>{data.length} records</em></p>}
+        </div>
+      }
+      <div className={styles.datasetsList}>
+        {error && <h3>Error querying datasets</h3>}
+
+        {!data && !error && <div className={styles.centerSpinner}> <div className={`${spinnerStyles.loader}`} /></div>}
+        <div className={styles.left}>
+          {
+            Object.entries(rolledUp).map(([domain, datasets]) => {
+              return (
+                <a id={`${domain}`} key={domain} >
+                  <div className={styles.datasetAndDomain}>
+                    <h3>{domain}</h3>
+                    {
+                      datasets.map(({ id, name, description, is_added }) =>
+                        <Dataset key={name + id}
+                          id={id} name={name} domain={domain}
+                          description={description} isAdded={is_added}
+                        />
+                      )
+                    }
+                  </div>
+                </a>
+              )
+            }
+
             )
           }
-
-          )
-        }
-      </div>
-      <div className={styles.right}>
-        <h4>Jump to...</h4>
-        {Object.entries(rolledUp).map(([domain, datasets]) =>
-          <div key={domain} className={styles.jumpToItem}>
-            <a href={`#${domain}`}>
-              {domain}
-            </a>&nbsp;
-            <AddsSubs addsSubs={getAddsSubs(datasets)} />
-          </div>
-        )}
-        <p className={styles.jumpToFooter}>
-          <Link href="/heatmap">Heatmap</Link>
-        </p>
+        </div>
+        <div className={styles.right}>
+          <h4>Jump to...</h4>
+          {Object.entries(rolledUp).map(([domain, datasets]) =>
+            <div key={domain} className={styles.jumpToItem}>
+              <a href={`#${domain}`}>
+                {domain}
+              </a>&nbsp;
+              <AddsSubs addsSubs={getAddsSubs(datasets)} />
+            </div>
+          )}
+          <p className={styles.jumpToFooter}>
+            <Link href="/heatmap">Heatmap</Link>
+          </p>
+        </div>
       </div>
     </div>
   )
