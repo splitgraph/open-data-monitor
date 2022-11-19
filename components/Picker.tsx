@@ -55,6 +55,10 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
     }
   }
 
+  const goToday = () => {
+    router.push('/')
+  }
+
   const prevDisabled = dropdownIndex === ''
     ? !(Direction.prev_day in response)
     : dropdownIndex === 'week'
@@ -82,6 +86,10 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
         <option value={"week"} data-path={response[Direction.equivalent_week]}>Week</option>
         <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
+      <span className={styles.padding}>&nbsp;</span>
+      <Button
+        onClick={goToday}
+      >Today</Button>
       <span className={styles.padding}>&nbsp;</span>
       <Button
         onClick={goNext}

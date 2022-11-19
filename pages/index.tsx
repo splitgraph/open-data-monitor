@@ -16,10 +16,6 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
     });
   }
 
-  const resetQueryParams = () => {
-    router.replace(router.pathname, undefined, { shallow: true });
-  }
-
   return (
     <SWRConfig value={{ fallback }}>
       <RootLayout>
