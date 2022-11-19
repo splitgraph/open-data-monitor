@@ -82,10 +82,11 @@ WHERE d.domain = '${domain}'
 GROUP BY 1
 ORDER BY 1 ASC`
 
-export const monthlyDiff = () =>
+export const monthlyDiff = (timestamp: string) =>
   `SELECT month, d.domain, d.name, is_added, id, d.description
 FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
 ON m.id = d.id
+WHERE m.month::text = '${timestamp}'
 ORDER BY 1, 2, 3`
 
 export interface MonthlyDiffResponse extends DiffResponse {
@@ -197,6 +198,10 @@ export const latestKnownDay =
 export const latestKnownWeek =
   `SELECT MAX(week) as latest FROM socrata.weekly_diff`
 
+/** Get the 'latest known month' i.e. 9/1/2022 00:00:00
+*/
+export const latestKnownMonth =
+  `SELECT MAX(month) as latest FROM socrata.monthly_diff`
 
 export enum Direction {
   prev_day = "prev_day",
