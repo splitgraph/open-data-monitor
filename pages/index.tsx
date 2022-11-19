@@ -9,12 +9,10 @@ import PickerContainer from '../components/PickerContainer'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
-  const setTimestamp = (value: string) => {
-    const newQueryParams = { ...router.query, index: value };
 
+  const setTimestamp = (value: string) => {
     router.replace({
-      pathname: router.pathname,
-      query: newQueryParams,
+      pathname: `/${value}`,
     });
   }
 
