@@ -10,8 +10,6 @@ interface WeeklyDiffProps {
 
 const WeeklyDiff = ({ timestamp }: WeeklyDiffProps) => {
   const { data, error } = useImmutableSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
-  const domains = new Set(data);
-  console.log({ data, domains })
 
   return (
     <div>

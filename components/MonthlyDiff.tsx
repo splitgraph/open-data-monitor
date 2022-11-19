@@ -10,7 +10,6 @@ interface MonthlyDiffProps {
 
 const MonthlyDiff = ({ timestamp }: MonthlyDiffProps) => {
   const { data, error } = useSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
-  console.log({ data })
 
   return (
     <div>

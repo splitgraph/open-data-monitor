@@ -6,7 +6,7 @@ interface DailyDatasetListProps {
 }
 const DailyDatasetList = ({ timestamp }: DailyDatasetListProps) => {
   const { data, error } = useWeeklyDiff(timestamp);
-  console.log({ data })
+
   return <DatasetList data={data} error={error} />
 }
 

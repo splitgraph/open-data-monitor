@@ -13,7 +13,7 @@ const WeekPage: NextPage<{ fallback: any }> = ({ fallback }) => {
   if (router.isFallback) {
     return <div>Loading...</div>
   }
-  console.log('router', router)
+
   const setTimestamp = (value: string) => {
     const newQueryParams = { ...router.query, week: value };
 

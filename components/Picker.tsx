@@ -18,7 +18,6 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
 
   //intended to tie the path (e.g. /, /week. /month) to <option>
   const dropdownIndex = router.pathname.split('/')[1]
-  console.log({ dropdownIndex })
 
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const { dataset } = event.target.options[event.target.selectedIndex];
