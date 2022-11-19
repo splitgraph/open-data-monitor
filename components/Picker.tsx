@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/router'
 import styles from './Picker.module.css'
 import Button from './Button'
-import { type RangeLength } from '../pages/index'
 import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
@@ -11,34 +11,81 @@ interface PickerProps {
   data: Array<TimestampDirection> | undefined;
 }
 const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
+  const router = useRouter()
   const response = useMemo(() =>
     data ? Object.fromEntries(data.map(({ direction, timestamp }) => [direction, timestamp])) : {},
     [data]);
 
-  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => event.target.value;
+  //intended to tie the path (e.g. /, /week. /month) to <option>
+  const dropdownIndex = router.pathname.split('/')[1]
+  console.log({ dropdownIndex })
+
+  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { dataset } = event.target.options[event.target.selectedIndex];
+    router.push(`/${event.target.value}/${dataset['path']}`)
+  }
+
+  const goPrev = () => {
+    switch (dropdownIndex) {
+      case '':  //day
+        setTimestamp(response.prev_day);
+        break;
+      case 'week':
+        setTimestamp(response.prev_week);
+        break;
+      case 'month':
+        setTimestamp(response.prev_month);
+        break;
+    }
+  }
+
+  const goNext = () => {
+    switch (dropdownIndex) {
+      case '':  //day
+        setTimestamp(response.next_day);
+        break;
+      case 'week':
+        setTimestamp(response.next_week);
+        break;
+      case 'month':
+        setTimestamp(response.next_month);
+        break;
+    }
+  }
+
+  const prevDisabled = dropdownIndex === ''
+    ? !(Direction.prev_day in response)
+    : dropdownIndex === 'week'
+      ? !(Direction.prev_week in response)
+      : !(Direction.prev_month in response)
+
+  const nextDisabled = dropdownIndex === ''
+    ? !(Direction.next_day in response)
+    : dropdownIndex === 'week'
+      ? !(Direction.next_week in response)
+      : !(Direction.next_month in response)
 
   return (
     <div className={styles.root}>
       <Button
-        onClick={() => setTimestamp(response.prev_day)}
-        disabled={!(Direction.prev_day in response)}
+        onClick={goPrev}
+        disabled={prevDisabled}
       >← Previous</Button>
       <span className={styles.padding}>&nbsp;</span>
       <select className={styles.select}
-        // disabled={disabled}
-        // value={desiredRangeLength}
+        value={dropdownIndex}
         onChange={handleChange}
       >
-        <option value={1}>Day</option>
-        <option value={7}>Week</option>
-        <option value={30}>Month</option>
+        <option value={""} data-path={response[Direction.equivalent_day]}>Day</option>
+        <option value={"week"} data-path={response[Direction.equivalent_week]}>Week</option>
+        <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
       <Button
-        onClick={() => setTimestamp(response.next_day)}
-        disabled={!(Direction.next_day in response)}
+        onClick={goNext}
+        disabled={nextDisabled}
       >Next →</Button>
-    </div>
+    </div >
   )
 }
 export default Picker

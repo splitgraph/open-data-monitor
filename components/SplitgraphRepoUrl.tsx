@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useSplitgraphRepoUrl, { type SocrataDatasetID } from '../useSplitgraphRepoUrl';
-import styles from '../styles/Spinner.module.css'
+import styles from './Spinner.module.css'
 
 /** Headless component intended to redirect user to the corresponding 
  * Splitgraph repository. Depends on `socrataExternalRepositories` in GQL schema */

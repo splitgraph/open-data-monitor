@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import SplitgraphRepoUrl from './SplitgraphRepoUrl';
 import Button from './Button'
-import styles from '../styles/Dataset.module.css'
+import styles from './Dataset.module.css'
 
 interface DatasetProps {
   id: string;

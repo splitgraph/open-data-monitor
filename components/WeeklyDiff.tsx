@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import useSWR from 'swr'
+import useImmutableSWR from 'swr/immutable'
 import { seafowlFetcher, weeklyDiff } from '../data/seafowl';
 import { type DatasetType } from './DatasetList'
 
@@ -9,7 +9,7 @@ interface WeeklyDiffProps {
 
 
 const WeeklyDiff = ({ timestamp }: WeeklyDiffProps) => {
-  const { data, error } = useSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
+  const { data, error } = useImmutableSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
   const domains = new Set(data);
   console.log({ data, domains })
 

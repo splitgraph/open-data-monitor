@@ -32,18 +32,13 @@ ORDER BY domain, name, is_added`
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const dailyDiff = (timestamp: string = '2022-11-02 00:00:00') =>
-  `SELECT
-  d.domain,
-  d.name,
-  is_added,
-  id,  
-  d.description
+  `SELECT d.domain, d.name, is_added, id, d.description
 FROM socrata.daily_diff dd INNER JOIN socrata.all_datasets d
-  ON dd.id = d.id
+ON dd.id = d.id
 WHERE dd.day::text = '${timestamp}'
 ORDER BY 1, 3, 2`
 
-export interface DailyDiffResponse {
+export interface DiffResponse {
   domain: string;
   name: string;
   is_added: boolean;
@@ -51,19 +46,13 @@ export interface DailyDiffResponse {
   description: string;
 }
 
-
 /**
  * Datasets added/deleted as of the given date + 7 days
  * @param timestamp Data
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const weeklyDiff = (timestamp: string = '2022-10-31 00:00:00') =>
-  `SELECT
-  d.domain,
-  d.name,
-  is_added,
-  id,  
-  d.description
+  `SELECT d.domain, d.name, is_added, id, d.description
 FROM socrata.weekly_diff w INNER JOIN socrata.all_datasets d
 ON w.id = d.id
 WHERE w.week::text = '${timestamp}'
@@ -94,16 +83,15 @@ GROUP BY 1
 ORDER BY 1 ASC`
 
 export const monthlyDiff = () =>
-  `SELECT
-  month,
-  d.domain,
-  d.name,
-  is_added,
-  id,
-  d.description
+  `SELECT month, d.domain, d.name, is_added, id, d.description
 FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
 ON m.id = d.id
 ORDER BY 1, 2, 3`
+
+export interface MonthlyDiffResponse extends DiffResponse {
+  month: string;
+}
+
 
 
 export const heatmap = (domain: string = 'data.cdc.gov') =>
@@ -198,11 +186,17 @@ ORDER BY month DESC LIMIT 1)`
 
 /** Get the 'latest known day' day
  * Intended to more reliably give homepage content
- * Defaulting to "today" assumes the Seafowl instance was updated today,
+ * Defaulting to the browser's "today" assumes the Seafowl instance was updated today,
  * which may not always be the case.
  */
 export const latestKnownDay =
   `SELECT MAX(day) as latest FROM socrata.daily_diff`
+
+/** Get the 'latest known week' i.e. Monday
+*/
+export const latestKnownWeek =
+  `SELECT MAX(week) as latest FROM socrata.weekly_diff`
+
 
 export enum Direction {
   prev_day = "prev_day",

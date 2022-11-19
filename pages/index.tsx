@@ -3,14 +3,9 @@ import type { NextPage, GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import { seafowlFetcher, latestKnownDay, picker, dailyDiff } from '../data/seafowl'
-import styles from '../styles/Home.module.css'
-import { HeadTag } from '../components/HeadTag'
-import DatasetList from '../components/DatasetList'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import RootLayout from '../layouts/Root'
+import DailyDatasetList from '../components/DailyDatasetList'
 import PickerContainer from '../components/PickerContainer'
-
-export type RangeLength = 1 | 7 | 30
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
@@ -21,17 +16,12 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   }
 
   return (
-    <div className={styles.container}>
-      <HeadTag />
-      <SWRConfig value={{ fallback }}>
-        <Header />
-        <main className={styles.main}>
-          <PickerContainer timestamp={timestamp} setTimestamp={setTimestamp} />
-          <DatasetList timestamp={timestamp} />
-        </main>
-      </SWRConfig>
-      <Footer />
-    </div>
+    <SWRConfig value={{ fallback }}>
+      <RootLayout>
+        <PickerContainer timestamp={timestamp} setTimestamp={setTimestamp} />
+        <DailyDatasetList timestamp={timestamp} />
+      </RootLayout >
+    </SWRConfig>
   )
 }
 

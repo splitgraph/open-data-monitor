@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import Link from 'next/link'
 import Dataset from './Dataset';
-import styles from '../styles/Dataset.module.css';
-import spinnerStyles from '../styles/Spinner.module.css'
-import { type DailyDiffResponse } from '../data/seafowl'
-import useDailyDiff from '../useDailyDiff';
+import styles from './Dataset.module.css';
+import spinnerStyles from './Spinner.module.css'
+import { type DiffResponse } from '../data/seafowl'
+
 
 export interface DatasetType {
   domain: string;
@@ -16,12 +16,12 @@ export interface DatasetType {
   is_added: boolean;
 }
 
-type DatasetNoDomain = Omit<DailyDiffResponse, "domain">
+type DatasetNoDomain = Omit<DiffResponse, "domain">
 interface RolledUpDatasets {
   [domain: string]: Array<DatasetNoDomain>;
 }
 
-const rollupData = (rows: Array<DailyDiffResponse>): RolledUpDatasets => {
+const rollupData = (rows: Array<DiffResponse>): RolledUpDatasets => {
   let result: any = {};
   if (rows) {
     rows?.forEach(({ domain, ...rest }) => {
@@ -35,11 +35,10 @@ const rollupData = (rows: Array<DailyDiffResponse>): RolledUpDatasets => {
 }
 
 interface DatasetListProps {
-  timestamp: string;
+  data: any;
+  error: any;
 }
-const DatasetList = ({ timestamp }: DatasetListProps) => {
-  const { data, error } = useDailyDiff(timestamp);
-  // useDailyDiff should always have a data b/c we are doing SSR. That's why as any b/c SWR
+const DatasetList = ({ data, error }: DatasetListProps) => {
   const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data as any), [data]);
 
   return (
