@@ -1,5 +1,5 @@
-import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
-import { useMemo } from 'react';
+import type { ChangeEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router'
 import styles from './Picker.module.css'
 import Button from './Button'
@@ -12,6 +12,7 @@ interface PickerProps {
 }
 const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false); // improve UX of Picker when an <option> is chosen
   const response = useMemo(() =>
     data ? Object.fromEntries(data.map(({ direction, timestamp }) => [direction, timestamp])) : {},
     [data]);
@@ -20,6 +21,7 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
   const dropdownIndex = router.pathname.split('/')[1] === '[index]' ? '' : router.pathname.split('/')[1];
 
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setIsLoading(true);
     const { dataset } = event.target.options[event.target.selectedIndex];
     if (event.target.value.length) { // it's /week or /month
       router.push(`/${event.target.value}/${dataset['path']}`)
@@ -80,6 +82,7 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
       <span className={styles.padding}>&nbsp;</span>
       <select className={styles.select}
         value={dropdownIndex}
+        disabled={isLoading}
         onChange={handleChange}
       >
         <option value={""} data-path={response[Direction.equivalent_day]}>Day</option>
