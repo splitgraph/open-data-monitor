@@ -5,7 +5,7 @@ import Picker from './Picker'
 
 interface PickerContainerProps {
   timestamp: string;
-  setTimestamp: Dispatch<SetStateAction<string>>;
+  setTimestamp: (timestamp: string) => void;
 }
 const Seafowl = ({ timestamp, setTimestamp }: PickerContainerProps) => {
   const { data, error } = useImmutableSWR(picker(timestamp), seafowlFetcher);

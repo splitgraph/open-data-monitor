@@ -7,8 +7,12 @@ import RootLayout from '../layouts/Root'
 import DailyDatasetList from '../components/DailyDatasetList'
 import PickerContainer from '../components/PickerContainer'
 
-const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
+// Note: This file is called [index] but it really means a day.
+// Visiting `/` should render 'latest known day', visiting `/blah` assumes blah is a day timestamp
+const DayPage: NextPage<{ fallback: any }> = ({ fallback }) => {
   const router = useRouter();
+  // const [timestamp, setTimestamp] = useState(fallback['timestamp'])
+
   const setTimestamp = (value: string) => {
     const newQueryParams = { ...router.query, index: value };
 
@@ -25,25 +29,23 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   return (
     <SWRConfig value={{ fallback }}>
       <RootLayout>
-        <PickerContainer timestamp={fallback[latestKnownDay]} setTimestamp={setTimestamp} />
-        <DailyDatasetList timestamp={fallback[latestKnownDay]} />
+        <PickerContainer timestamp={fallback['timestamp']} setTimestamp={setTimestamp} />
+        <DailyDatasetList timestamp={fallback['timestamp']} />
       </RootLayout >
     </SWRConfig>
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  // avoid empty default by fetching "latest known day"
-  const latestKnownDayRaw = await seafowlFetcher(latestKnownDay);
-  // we need to parse out the value; assign it to `timestamp`
-  const { latest: timestamp } = latestKnownDayRaw.length && latestKnownDayRaw[0]
-  const pickerResult = await seafowlFetcher(picker(timestamp))
-  const dailyDiffResult = await seafowlFetcher(dailyDiff(timestamp))
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+  /** so long as this code lives in [index].tsx, query.index should always be defined */
+  const timestamp = query.index as string;
+  const pickerResult = await seafowlFetcher(picker(timestamp));
+  const dailyDiffResult = await seafowlFetcher(dailyDiff(timestamp));
 
   return {
     props: {
       fallback: {
-        [latestKnownDay]: timestamp,
+        timestamp: timestamp,
         [picker(timestamp)]: pickerResult,
         [dailyDiff(timestamp)]: dailyDiffResult
       }
@@ -51,4 +53,4 @@ export const getServerSideProps: GetServerSideProps = async () => {
   }
 }
 
-export default Home
+export default DayPage

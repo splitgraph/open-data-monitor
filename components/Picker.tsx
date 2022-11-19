@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/router'
 import styles from './Picker.module.css'
 import Button from './Button'
@@ -7,7 +7,7 @@ import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
   timestamp: string;
-  setTimestamp: Dispatch<SetStateAction<string>>;
+  setTimestamp: (timestamp: string) => void;
   data: Array<TimestampDirection> | undefined;
 }
 const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
@@ -21,33 +21,36 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
 
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const { dataset } = event.target.options[event.target.selectedIndex];
-    router.push(`/${event.target.value}/${dataset['path']}`)
+    if (event.target.value.length) { // it's /week or /month
+      router.push(`/${event.target.value}/${dataset['path']}`)
+    }
+    router.push(`/${dataset['path']}`) // when event.target.value === empty string, it's a day
   }
 
   const goPrev = () => {
     switch (dropdownIndex) {
-      case '':  //day
-        setTimestamp(response.prev_day);
-        break;
       case 'week':
         setTimestamp(response.prev_week);
         break;
       case 'month':
         setTimestamp(response.prev_month);
         break;
+      default:  // day - either '/' or '/2022-10-24%20blahblah'
+        setTimestamp(response.prev_day);
+        break;
     }
   }
 
   const goNext = () => {
     switch (dropdownIndex) {
-      case '':  //day
-        setTimestamp(response.next_day);
-        break;
       case 'week':
         setTimestamp(response.next_week);
         break;
       case 'month':
         setTimestamp(response.next_month);
+        break;
+      default:  // day - either '/' or '/2022-10-24%20blahblah'
+        setTimestamp(response.next_day);
         break;
     }
   }
