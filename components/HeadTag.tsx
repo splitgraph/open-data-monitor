@@ -7,4 +7,4 @@ const HeadTag = () =>
     <link rel="icon" href="/favicon.ico" />
   </Head>
 
-export default Head
+export default HeadTag
