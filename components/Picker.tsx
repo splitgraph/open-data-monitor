@@ -2,6 +2,7 @@ import type { ChangeEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router'
 import styles from './Picker.module.css'
+import selectStyles from './Select.module.css'
 import Button from './Button'
 import { type TimestampDirection, Direction } from '../data/seafowl';
 
@@ -30,6 +31,7 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
   }
 
   const goPrev = () => {
+    setIsLoading(true);
     switch (dropdownIndex) {
       case 'week':
         setTimestamp(response.prev_week);
@@ -41,9 +43,11 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
         setTimestamp(response.prev_day);
         break;
     }
+    setIsLoading(false);
   }
 
   const goNext = () => {
+    setIsLoading(true);
     switch (dropdownIndex) {
       case 'week':
         setTimestamp(response.next_week);
@@ -55,19 +59,20 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
         setTimestamp(response.next_day);
         break;
     }
+    setIsLoading(false);
   }
 
   const goToday = () => {
     router.push('/')
   }
 
-  const prevDisabled = dropdownIndex === ''
+  const prevDisabled = isLoading || dropdownIndex === ''
     ? !(Direction.prev_day in response)
     : dropdownIndex === 'week'
       ? !(Direction.prev_week in response)
       : !(Direction.prev_month in response)
 
-  const nextDisabled = dropdownIndex === ''
+  const nextDisabled = isLoading || dropdownIndex === ''
     ? !(Direction.next_day in response)
     : dropdownIndex === 'week'
       ? !(Direction.next_week in response)
@@ -80,7 +85,7 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
         disabled={prevDisabled}
       >← Previous</Button>
       <span className={styles.padding}>&nbsp;</span>
-      <select className={styles.select}
+      <select className={selectStyles.select}
         value={dropdownIndex}
         disabled={isLoading}
         onChange={handleChange}
@@ -91,14 +96,10 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
       </select>
       <span className={styles.padding}>&nbsp;</span>
       <Button
-        onClick={goToday}
-      >Today</Button>
-      <span className={styles.padding}>&nbsp;</span>
-      <Button
         onClick={goNext}
         disabled={nextDisabled}
       >Next →</Button>
-    </div >
+    </div>
   )
 }
 export default Picker
