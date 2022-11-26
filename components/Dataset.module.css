@@ -5,6 +5,12 @@
   margin-bottom: 1rem;
   box-shadow: 2px 2px 5px gray;
   background: white;
+  /* overflow: hidden;
+  white-space: nowrap; */
+}
+
+.domain {
+  /* text-overflow: ellipsis; */
 }
 
 .dataset {
@@ -16,17 +22,43 @@
   position: relative;
 }
 
-.datasetsList {
-  display: flex;
-  position: relative;
-}
 
 .left {
-  width: 70%;
+  width: 100%;
 }
+/* At mobile sizes, set `display: none`
+  This works so long as we manually set display: flex to show it at desktop sizes
+*/
 .right {
-  width: 30%;
-  padding-left: 1rem;
+  display: none;
+}
+
+.jumpToSelect {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 777px) { 
+  .left {
+    width: 65%;
+  }
+
+  .right {
+    width: 35%;
+    padding-left: 1rem;
+    display: flex;
+  }
+
+  .jumpToSelect {
+    display: none;
+  }
+  
+  .datasetsList {
+    display: flex;
+    position: relative;
+  }
 }
 
 .repoButton {
