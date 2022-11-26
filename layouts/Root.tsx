@@ -9,8 +9,7 @@ interface RootLayoutProps {
 }
 const RootLayout = ({ children }: RootLayoutProps) =>
   <div className={styles.container}>
-    <HeadTag>
-    </HeadTag>
+    <HeadTag />
     <Header />
     <main className={styles.main}>
       {children}
