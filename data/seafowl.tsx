@@ -1,5 +1,5 @@
 import { type BareFetcher } from 'swr';
-import crypto from 'crypto';
+import { webcrypto } from 'crypto'
 const SEAFOWL_API = 'https://seafowl-socrata.fly.dev/q'
 const SEAFOWL_ROOT = 'https://seafowl-socrata.fly.dev'
 
@@ -251,7 +251,14 @@ export const seafowlFetcherUncached = (query: string): Partial<PublicConfigurati
 export const seafowlFetcher = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
   const query = sql.trim().replace(/(?:\r\n|\r|\n)/g, " ");
 
-  const digest = await crypto.webcrypto.subtle.digest(
+  /** Select appropriate crypto module, depending on SSR or CSR (Node.js vs browser)
+   * window.crypto in-browser supports SubtleCrypto
+   * for Node.js it lives inside crypto.webcrypto.subtle
+   * Need to use the appropriate module depending on context
+   */
+  const theCrypto = typeof window === "undefined" ? webcrypto : crypto;
+
+  const digest = await theCrypto.subtle.digest(
     "SHA-256",
     new TextEncoder().encode(query)
   );
