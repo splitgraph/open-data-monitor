@@ -1,5 +1,7 @@
 import { type BareFetcher } from 'swr';
+import crypto from 'crypto';
 const SEAFOWL_API = 'https://seafowl-socrata.fly.dev/q'
+const SEAFOWL_ROOT = 'https://seafowl-socrata.fly.dev'
 
 /**
 *  Datasets diffs between the specified tags (roughly, "dates")
@@ -226,7 +228,7 @@ export interface AddedRemovedWeek {
   week: string;
 }
 //@ts-ignore TODO figure out where we should import PublicConfiguration from
-export const seafowlFetcher = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
+export const seafowlFetcherUncached = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
   fetch(SEAFOWL_API, {
     method: "POST",
     // TODO: https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api - use GET
@@ -238,3 +240,33 @@ export const seafowlFetcher = (query: string): Partial<PublicConfiguration<Added
   }).catch((reason) => {
     console.error(reason)
   });
+
+
+/** GET-based Seafowl fetcher
+ * If you GET + pass a query hash in, Seafowl plays nice fetch()'s built-in cache semantics
+ * 
+ * @see https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api
+ */
+// @ts-ignore
+export const seafowlFetcher = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
+  const query = sql.trim().replace(/(?:\r\n|\r|\n)/g, " ");
+
+  const digest = await crypto.webcrypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(query)
+  );
+  const hash = [...new Uint8Array(digest)]
+    .map((x) => x.toString(16).padStart(2, "0"))
+    .join("");
+
+  return fetch(`${SEAFOWL_ROOT}/q/${hash}.csv`, {
+    headers: { "X-Seafowl-Query": query }
+  }).then(async (response) => {
+    const responseText = await response.text();
+    return responseText ? responseText.trim().split("\n").map(JSON.parse as any) : [];
+  }).catch((reason) => {
+    console.error(reason)
+  });
+}
+
+
