@@ -35,15 +35,14 @@ const DayPage: NextPage<{ fallback: any }> = ({ fallback }) => {
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   /** so long as this code lives in [index].tsx, query.index should always be defined */
   const timestamp = query.index as string;
-  const pickerResult = await seafowlFetcher(picker(timestamp));
-  const dailyDiffResult = await seafowlFetcher(dailyDiff(timestamp));
+  const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(dailyDiff(timestamp))])
 
   return {
     props: {
       fallback: {
         timestamp: timestamp,
-        [picker(timestamp)]: pickerResult,
-        [dailyDiff(timestamp)]: dailyDiffResult
+        [picker(timestamp)]: responses[0],
+        [dailyDiff(timestamp)]: responses[1]
       }
     }
   }

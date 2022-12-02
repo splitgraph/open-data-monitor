@@ -34,15 +34,14 @@ const MonthPage: NextPage<{ fallback: any }> = ({ fallback }) => {
 export const getServerSideProps: GetServerSideProps = async () => {
   const latestKnownMonthRaw = await seafowlFetcher(latestKnownMonth);
   const { latest: timestamp } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
-  const pickerResult = await seafowlFetcher(picker(timestamp))
-  const dailyDiffResult = await seafowlFetcher(monthlyDiff(timestamp))
+  const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(monthlyDiff(timestamp))])
 
   return {
     props: {
       fallback: {
         [latestKnownMonthRaw]: timestamp,
-        [picker(timestamp)]: pickerResult,
-        [monthlyDiff(timestamp)]: dailyDiffResult
+        [picker(timestamp)]: responses[0],
+        [monthlyDiff(timestamp)]: responses[1]
       }
     }
   }

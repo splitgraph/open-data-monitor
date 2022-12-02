@@ -35,15 +35,14 @@ const WeekPage: NextPage<{ fallback: any }> = ({ fallback }) => {
 export const getServerSideProps: GetServerSideProps = async () => {
   const latestKnownWeekRaw = await seafowlFetcher(latestKnownWeek);
   const { latest: timestamp } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
-  const pickerResult = await seafowlFetcher(picker(timestamp))
-  const dailyDiffResult = await seafowlFetcher(weeklyDiff(timestamp))
+  const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
 
   return {
     props: {
       fallback: {
         [latestKnownWeek]: timestamp,
-        [picker(timestamp)]: pickerResult,
-        [weeklyDiff(timestamp)]: dailyDiffResult
+        [picker(timestamp)]: responses[0],
+        [weeklyDiff(timestamp)]: responses[1]
       }
     }
   }
