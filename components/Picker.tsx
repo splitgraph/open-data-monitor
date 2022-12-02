@@ -1,17 +1,17 @@
 import type { ChangeEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import styles from './Picker.module.css'
 import selectStyles from './Select.module.css'
 import Button from './Button'
 import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
-  timestamp: string;
   setTimestamp: (timestamp: string) => void;
   data: Array<TimestampDirection> | undefined;
 }
-const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
+const Picker = ({ data, setTimestamp }: PickerProps) => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false); // improve UX of Picker when an <option> is chosen
   const response = useMemo(() =>
@@ -30,36 +30,34 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
     router.push(`/${dataset['path']}`) // when event.target.value === empty string, it's a day
   }
 
-  const goPrev = () => {
-    setIsLoading(true);
+  const getPrev = () => {
     switch (dropdownIndex) {
       case 'week':
-        setTimestamp(response.prev_week);
-        break;
+        return response.prev_week
       case 'month':
-        setTimestamp(response.prev_month);
-        break;
+        return response.prev_month;
       default:  // day - either '/' or '/2022-10-24%20blahblah'
-        setTimestamp(response.prev_day);
-        break;
+        return response.prev_day;
     }
-    setIsLoading(false);
+  }
+
+  const goPrev = () => {
+    setTimestamp(getPrev())
+  }
+
+  const getNext = () => {
+    switch (dropdownIndex) {
+      case 'week':
+        return response.next_week;
+      case 'month':
+        return response.next_month
+      default:  // day - either '/' or '/2022-10-24%20blahblah'
+        return response.next_day
+    }
   }
 
   const goNext = () => {
-    setIsLoading(true);
-    switch (dropdownIndex) {
-      case 'week':
-        setTimestamp(response.next_week);
-        break;
-      case 'month':
-        setTimestamp(response.next_month);
-        break;
-      default:  // day - either '/' or '/2022-10-24%20blahblah'
-        setTimestamp(response.next_day);
-        break;
-    }
-    setIsLoading(false);
+    setTimestamp(getNext())
   }
 
   const goToday = () => {
@@ -80,10 +78,9 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
 
   return (
     <div className={styles.root}>
-      <Button
-        onClick={goPrev}
-        disabled={prevDisabled}
-      >← Previous</Button>
+      <a style={{ border: '1px solid red' }} href={`/${getPrev()}`}>Prev (a tag)</a>
+      <Link style={{ border: '1px solid blue' }} href={`/${getPrev()}`}>Prev (Link tag)</Link>
+      <Button onClick={goPrev} disabled={prevDisabled}>← Previous</Button>
       <span className={styles.padding}>&nbsp;</span>
       <select className={selectStyles.select}
         value={dropdownIndex}
@@ -95,10 +92,9 @@ const Picker = ({ data, timestamp, setTimestamp }: PickerProps) => {
         <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-      <Button
-        onClick={goNext}
-        disabled={nextDisabled}
-      >Next →</Button>
+      <Button onClick={goNext} disabled={nextDisabled}>Next →</Button>
+      <a style={{ border: '1px solid red' }} href={`/${getNext()}`}>Next (a tag)</a>
+      <Link style={{ border: '1px solid blue' }} href={`/${getNext()}`}>Next (Link tag)</Link>
     </div>
   )
 }
