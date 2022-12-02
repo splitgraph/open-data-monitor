@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { NextPage, GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
@@ -31,15 +30,15 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const latestKnownDayRaw = await seafowlFetcher(latestKnownDay);
   // we need to parse out the value; assign it to `timestamp`
   const { latest: timestamp } = latestKnownDayRaw.length && latestKnownDayRaw[0]
-  const pickerResult = await seafowlFetcher(picker(timestamp))
-  const dailyDiffResult = await seafowlFetcher(dailyDiff(timestamp))
+  // fetch remaining two queries in parallel
+  const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(dailyDiff(timestamp))])
 
   return {
     props: {
       fallback: {
         [latestKnownDay]: timestamp,
-        [picker(timestamp)]: pickerResult,
-        [dailyDiff(timestamp)]: dailyDiffResult
+        [picker(timestamp)]: responses[0],
+        [dailyDiff(timestamp)]: responses[1]
       }
     }
   }
