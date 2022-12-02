@@ -1,5 +1,4 @@
 import useImmutableSWR from 'swr/immutable';
-import type { Dispatch, SetStateAction } from 'react';
 import { seafowlFetcher, picker } from '../data/seafowl'
 import Picker from './Picker'
 
@@ -13,7 +12,7 @@ const Seafowl = ({ timestamp, setTimestamp }: PickerContainerProps) => {
   return (
     <div>
       {!!error && <h4>Sorry, an error occurred.</h4>}
-      <Picker timestamp={timestamp} setTimestamp={setTimestamp} data={data} />
+      <Picker setTimestamp={setTimestamp} data={data} />
       <h4>{timestamp}</h4>
     </div>
   )
