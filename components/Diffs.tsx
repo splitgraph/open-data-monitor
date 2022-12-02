@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import styles from '../styles/Home.module.css'
+import styles from '../styles/Root.module.css'
 import SplitgraphRepoUrl from './SplitgraphRepoUrl';
 
 interface DiffItem {

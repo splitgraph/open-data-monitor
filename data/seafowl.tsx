@@ -32,16 +32,19 @@ ORDER BY domain, name, is_added`
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const dailyDiff = (timestamp: string = '2022-11-02 00:00:00') =>
-  `SELECT
-  d.domain,
-  d.name,
-  is_added,
-  id,  
-  d.description
+  `SELECT d.domain, d.name, is_added, id, d.description
 FROM socrata.daily_diff dd INNER JOIN socrata.all_datasets d
-  ON dd.id = d.id
+ON dd.id = d.id
 WHERE dd.day::text = '${timestamp}'
 ORDER BY 1, 3, 2`
+
+export interface DiffResponse {
+  domain: string;
+  name: string;
+  is_added: boolean;
+  id: string;
+  description: string;
+}
 
 /**
  * Datasets added/deleted as of the given date + 7 days
@@ -49,12 +52,7 @@ ORDER BY 1, 3, 2`
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const weeklyDiff = (timestamp: string = '2022-10-31 00:00:00') =>
-  `SELECT
-  d.domain,
-  d.name,
-  is_added,
-  id,  
-  d.description
+  `SELECT d.domain, d.name, is_added, id, d.description
 FROM socrata.weekly_diff w INNER JOIN socrata.all_datasets d
 ON w.id = d.id
 WHERE w.week::text = '${timestamp}'
@@ -84,17 +82,17 @@ WHERE d.domain = '${domain}'
 GROUP BY 1
 ORDER BY 1 ASC`
 
-export const monthlyDiff = () =>
-  `SELECT
-  month,
-  d.domain,
-  d.name,
-  is_added,
-  id,
-  d.description
+export const monthlyDiff = (timestamp: string) =>
+  `SELECT month, d.domain, d.name, is_added, id, d.description
 FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
 ON m.id = d.id
+WHERE m.month::text = '${timestamp}'
 ORDER BY 1, 2, 3`
+
+export interface MonthlyDiffResponse extends DiffResponse {
+  month: string;
+}
+
 
 
 export const heatmap = (domain: string = 'data.cdc.gov') =>
@@ -106,6 +104,121 @@ WHERE domain = '${domain}'
 GROUP BY 1
 ORDER BY 1 ASC`
 
+
+export const picker = (timestamp: string) =>
+  `(SELECT
+  day AS timestamp,
+  'prev_day' AS direction
+FROM socrata.daily_diff
+  WHERE day < '${timestamp}'::timestamp
+ORDER BY day DESC LIMIT 1)
+
+UNION ALL
+
+(SELECT
+  day AS timestamp,
+  'next_day' AS direction
+FROM socrata.daily_diff
+  WHERE day > '${timestamp}'::timestamp
+ORDER BY day ASC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  day AS timestamp,
+  'equivalent_day' AS direction
+FROM socrata.daily_diff
+  WHERE day <= '${timestamp}'::timestamp
+ORDER BY day DESC LIMIT 1)
+
+UNION ALL
+  
+  (SELECT
+  week AS timestamp,
+  'prev_week' AS direction
+FROM socrata.weekly_diff
+  WHERE week < '${timestamp}'::timestamp
+ORDER BY week DESC LIMIT 1)
+
+UNION ALL
+
+(SELECT
+  week AS timestamp,
+  'next_week' AS direction
+FROM socrata.weekly_diff
+  WHERE week > '${timestamp}'::timestamp
+ORDER BY week ASC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  week AS timestamp,
+  'equivalent_week' AS direction
+FROM socrata.weekly_diff
+  WHERE week <= '${timestamp}'::timestamp
+ORDER BY week DESC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  month AS timestamp,
+  'prev_month' AS direction
+FROM socrata.monthly_diff
+  WHERE month < '${timestamp}'::timestamp
+ORDER BY month DESC LIMIT 1)
+
+UNION ALL
+
+(SELECT
+  month AS timestamp,
+  'next_month' AS direction
+FROM socrata.monthly_diff
+  WHERE month > '${timestamp}'::timestamp
+ORDER BY month ASC LIMIT 1)
+
+UNION ALL 
+
+(SELECT
+  month AS timestamp,
+  'equivalent_month' AS direction
+FROM socrata.monthly_diff
+  WHERE month <= '${timestamp}'::timestamp
+ORDER BY month DESC LIMIT 1)`
+
+/** Get the 'latest known day' day
+ * Intended to more reliably give homepage content
+ * Defaulting to the browser's "today" assumes the Seafowl instance was updated today,
+ * which may not always be the case.
+ */
+export const latestKnownDay =
+  `SELECT MAX(day) as latest FROM socrata.daily_diff`
+
+/** Get the 'latest known week' i.e. Monday
+*/
+export const latestKnownWeek =
+  `SELECT MAX(week) as latest FROM socrata.weekly_diff`
+
+/** Get the 'latest known month' i.e. 9/1/2022 00:00:00
+*/
+export const latestKnownMonth =
+  `SELECT MAX(month) as latest FROM socrata.monthly_diff`
+
+export enum Direction {
+  prev_day = "prev_day",
+  next_day = "next_day",
+  equivalent_day = "equivalent_day",
+  prev_week = "prev_week",
+  next_week = "next_week",
+  equivalent_week = "equivalent_week",
+  prev_month = "prev_month",
+  next_month = "next_month",
+  equivalent_month = "equivalent_month"
+}
+
+export interface TimestampDirection {
+  direction: Direction;
+  timestamp: string;
+}
 
 export interface AddedRemovedWeek {
   added: number;

@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
-import Link from 'next/link'
 import Dataset from './Dataset';
-import styles from '../styles/Dataset.module.css';
+import styles from './Dataset.module.css';
+import spinnerStyles from './Spinner.module.css'
+import { type DiffResponse } from '../data/seafowl'
+import DatasetJumpTo from './DatasetJumpTo';
 
 export interface DatasetType {
   domain: string;
@@ -13,12 +15,12 @@ export interface DatasetType {
   is_added: boolean;
 }
 
-type DatasetNoDomain = Omit<DatasetType, "domain">
-interface RolledUpDatasets {
+export type DatasetNoDomain = Omit<DiffResponse, "domain">
+export interface RolledUpDatasets {
   [domain: string]: Array<DatasetNoDomain>;
 }
 
-const rollupData = (rows: Array<DatasetType>): RolledUpDatasets => {
+const rollupData = (rows: Array<DiffResponse>): RolledUpDatasets => {
   let result: any = {};
   if (rows) {
     rows?.forEach(({ domain, ...rest }) => {
@@ -32,79 +34,54 @@ const rollupData = (rows: Array<DatasetType>): RolledUpDatasets => {
 }
 
 interface DatasetListProps {
-  data: Array<DatasetType>;
+  data: any;
+  error: any;
 }
-const DatasetList = ({ data }: DatasetListProps) => {
-  const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data), [data]);
+const DatasetList = ({ data, error }: DatasetListProps) => {
+  const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data as any), [data]);
 
   return (
-    <div className={styles.datasetsList}>
-      <div className={styles.left}>
-        {
-          Object.entries(rolledUp).map(([domain, datasets]) => {
-            return (
-              <a id={`${domain}`} key={domain} >
-                <div className={styles.datasetAndDomain}>
-                  <h3>{domain}</h3>
-                  {
-                    datasets.map(({ id, name, description, is_added }) =>
-                      <Dataset key={name + id}
-                        id={id} name={name} domain={domain}
-                        description={description} isAdded={is_added}
-                      />
-                    )
-                  }
-                </div>
-              </a>
+    <div>
+      <div className={styles.jumpToSelect}>
+        Jump to:&nbsp;<DatasetJumpTo rolledUp={rolledUp} showSelect />
+      </div>
+      {data &&
+        <div>
+          {data.length && <p><em>{data.length} records</em></p>}
+        </div>
+      }
+      <div className={styles.datasetsList}>
+        {error && <h3>Error querying datasets</h3>}
+
+        {!data && !error && <div className={styles.centerSpinner}> <div className={`${spinnerStyles.loader}`} /></div>}
+        <div className={styles.left}>
+          {
+            Object.entries(rolledUp).map(([domain, datasets]) => {
+              return (
+                <a id={`${domain}`} key={domain} >
+                  <div className={styles.datasetAndDomain}>
+                    <h3>{domain}</h3>
+                    {
+                      datasets.map(({ id, name, description, is_added }) =>
+                        <Dataset key={name + id}
+                          id={id} name={name} domain={domain}
+                          description={description} isAdded={is_added}
+                        />
+                      )
+                    }
+                  </div>
+                </a>
+              )
+            }
             )
           }
+        </div>
+        <div className={styles.right}>
+          <DatasetJumpTo rolledUp={rolledUp} />
+        </div>
 
-          )
-        }
-      </div>
-      <div className={styles.right}>
-        <h4>Jump to...</h4>
-        {Object.entries(rolledUp).map(([domain, datasets]) =>
-          <div key={domain} className={styles.jumpToItem}>
-            <a href={`#${domain}`}>
-              {domain}
-            </a>&nbsp;
-            <AddsSubs addsSubs={getAddsSubs(datasets)} />
-          </div>
-        )}
-        <p className={styles.jumpToFooter}>
-          <Link href="/heatmap">Heatmap</Link>
-        </p>
       </div>
     </div>
   )
 }
 export default DatasetList
-
-const getAddsSubs = (datasets: Array<DatasetNoDomain>) => {
-  let adds = 0;
-  let subs = 0;
-  datasets.forEach((ds: DatasetNoDomain) => {
-    if (ds.is_added) { adds++ }
-    else { subs++ }
-  })
-
-  return { adds, subs };
-}
-
-const AddsSubs = ({ addsSubs }: { addsSubs: { adds: number, subs: number } }) => {
-  const { adds, subs } = addsSubs;
-  return (
-    <span>
-      {adds > 0 && <Adds adds={adds} />}
-      {((adds > 0) && (subs > 0)) && ", "}
-      {subs > 0 && <Subs subs={subs} />}
-    </span>
-  )
-}
-
-const Adds = ({ adds }: { adds: number }) =>
-  adds > 0 ? <span>{`+${adds}`}</span> : null
-
-const Subs = ({ subs }: { subs: number }) =>
-  subs > 0 ? <span>{`-${subs}`}</span> : null
