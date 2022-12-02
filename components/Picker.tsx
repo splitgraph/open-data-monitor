@@ -78,9 +78,9 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
 
   return (
     <div className={styles.root}>
-      <a style={{ border: '1px solid red' }} href={`/${getPrev()}`}>Prev (a tag)</a>
-      <Link style={{ border: '1px solid blue' }} href={`/${getPrev()}`}>Prev (Link tag)</Link>
-      <Button onClick={goPrev} disabled={prevDisabled}>← Previous</Button>
+      <Link href={`/${getPrev()}`}>
+        <Button disabled={prevDisabled}>← Previous</Button>
+      </Link>
       <span className={styles.padding}>&nbsp;</span>
       <select className={selectStyles.select}
         value={dropdownIndex}
@@ -92,9 +92,9 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
         <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-      <Button onClick={goNext} disabled={nextDisabled}>Next →</Button>
-      <a style={{ border: '1px solid red' }} href={`/${getNext()}`}>Next (a tag)</a>
-      <Link style={{ border: '1px solid blue' }} href={`/${getNext()}`}>Next (Link tag)</Link>
+      <Link href={`/${getNext()}`}>
+        <Button disabled={nextDisabled}>Next →</Button>
+      </Link>
     </div>
   )
 }
