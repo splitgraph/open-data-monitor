@@ -229,6 +229,7 @@ export interface AddedRemovedWeek {
 export const seafowlFetcher = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
   fetch(SEAFOWL_API, {
     method: "POST",
+    // TODO: https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api - use GET
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ query })
   }).then(async (response) => {
