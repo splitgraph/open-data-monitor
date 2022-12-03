@@ -1,12 +1,13 @@
-import type { NextPage, GetServerSideProps } from 'next'
+import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import { seafowlFetcher, latestKnownWeek, picker, weeklyDiff } from '../../data/seafowl'
 import RootLayout from '../../layouts/Root'
 import WeeklyDatasetList from '../../components/WeeklyDatasetList'
 import PickerContainer from '../../components/PickerContainer'
+import { SSRPageProps } from '..'
 
-const WeekPage: NextPage<{ fallback: any }> = ({ fallback }) => {
+const WeekPage: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
   const { week } = router.query;
 
@@ -32,18 +33,16 @@ const WeekPage: NextPage<{ fallback: any }> = ({ fallback }) => {
     </SWRConfig>
   )
 }
-export const getServerSideProps: GetServerSideProps = async () => {
+WeekPage.getInitialProps = async () => {
   const latestKnownWeekRaw = await seafowlFetcher(latestKnownWeek);
   const { latest: timestamp } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
 
   return {
-    props: {
-      fallback: {
-        [latestKnownWeek]: timestamp,
-        [picker(timestamp)]: responses[0],
-        [weeklyDiff(timestamp)]: responses[1]
-      }
+    fallback: {
+      [latestKnownWeek]: timestamp,
+      [picker(timestamp)]: responses[0],
+      [weeklyDiff(timestamp)]: responses[1]
     }
   }
 }

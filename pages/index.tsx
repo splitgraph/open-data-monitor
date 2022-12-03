@@ -1,4 +1,4 @@
-import type { NextPage, GetServerSideProps } from 'next'
+import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import { seafowlFetcher, latestKnownDay, picker, dailyDiff } from '../data/seafowl'
@@ -6,7 +6,15 @@ import RootLayout from '../layouts/Root'
 import DailyDatasetList from '../components/DailyDatasetList'
 import PickerContainer from '../components/PickerContainer'
 
-const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
+/** SWR offers SSR support via a "fallback" prop, 
+ * which contains the SSR-loaded data from Seafowl.
+ * This hydrates the SWR cache and allows JS-disabled
+ * users to still see content (for Googlebot/SEO)
+ */
+export interface SSRPageProps {
+  fallback: any;
+}
+const Home: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
 
   const setTimestamp = (value: string) => {
@@ -25,7 +33,7 @@ const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+Home.getInitialProps = async () => {
   // avoid empty default by fetching "latest known day"
   const latestKnownDayRaw = await seafowlFetcher(latestKnownDay);
   // we need to parse out the value; assign it to `timestamp`
@@ -34,12 +42,10 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(dailyDiff(timestamp))])
 
   return {
-    props: {
-      fallback: {
-        [latestKnownDay]: timestamp,
-        [picker(timestamp)]: responses[0],
-        [dailyDiff(timestamp)]: responses[1]
-      }
+    fallback: {
+      [latestKnownDay]: timestamp,
+      [picker(timestamp)]: responses[0],
+      [dailyDiff(timestamp)]: responses[1]
     }
   }
 }

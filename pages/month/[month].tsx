@@ -1,12 +1,13 @@
-import type { NextPage, GetServerSideProps } from 'next'
+import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
+import type { SSRPageProps } from '..'
 import { seafowlFetcher, latestKnownMonth, picker, monthlyDiff } from '../../data/seafowl'
 import RootLayout from '../../layouts/Root'
 import MonthlyDatasetList from '../../components/MonthlyDatasetList'
 import PickerContainer from '../../components/PickerContainer'
 
-const MonthPage: NextPage<{ fallback: any }> = ({ fallback }) => {
+const MonthPage: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
   const { month } = router.query;
 
@@ -31,18 +32,17 @@ const MonthPage: NextPage<{ fallback: any }> = ({ fallback }) => {
     </SWRConfig>
   )
 }
-export const getServerSideProps: GetServerSideProps = async () => {
+
+MonthPage.getInitialProps = async () => {
   const latestKnownMonthRaw = await seafowlFetcher(latestKnownMonth);
   const { latest: timestamp } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(monthlyDiff(timestamp))])
 
   return {
-    props: {
-      fallback: {
-        [latestKnownMonthRaw]: timestamp,
-        [picker(timestamp)]: responses[0],
-        [monthlyDiff(timestamp)]: responses[1]
-      }
+    fallback: {
+      [latestKnownMonthRaw]: timestamp,
+      [picker(timestamp)]: responses[0],
+      [monthlyDiff(timestamp)]: responses[1]
     }
   }
 }
