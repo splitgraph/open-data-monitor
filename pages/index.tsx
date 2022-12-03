@@ -7,12 +7,12 @@ import DailyDatasetList from '../components/DailyDatasetList'
 import PickerContainer from '../components/PickerContainer'
 
 const Home: NextPage<{ fallback: any }> = ({ fallback }) => {
-  const setTimestamp = (value: string) => {
-    // router.replace({
-    //   pathname: `/${value}`,
-    // });
+  const router = useRouter();
 
-    window.history.pushState({}, '', `/${value}`);
+  const setTimestamp = (value: string) => {
+    router.replace({
+      pathname: `/${value}`,
+    });
   }
 
   return (
