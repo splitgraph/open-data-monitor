@@ -23,7 +23,13 @@ const Picker = ({ data }: PickerProps) => {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setIsLoading(true);
     const { dataset } = event.target.options[event.target.selectedIndex];
+
     const trimmedTimestamp = dataset['path']?.slice(0, 10)
+    if (typeof trimmedTimestamp === 'undefined') {
+      // in case Picker query didn't come back with a smaller time unit (e.g. equivalent_day when rendering month)
+      setIsLoading(false);
+      return
+    }
     if (event.target.value.length) { // it's /week or /month
       router.push(`/${event.target.value}/${trimmedTimestamp}`)
     } else {
@@ -96,9 +102,11 @@ const Picker = ({ data }: PickerProps) => {
 
   return (
     <div className={styles.root}>
-      <Link href={getPrevLinkHref()}>
-        <Button disabled={prevDisabled}>← Previous</Button>
-      </Link>
+      {prevDisabled ? <Button disabled={prevDisabled}>← Previous </Button> :
+        <Link href={getPrevLinkHref()}>
+          <Button>← Previous </Button>
+        </Link>
+      }
       <span className={styles.padding}>&nbsp;</span>
       <select className={selectStyles.select}
         value={dropdownIndex}
@@ -110,10 +118,11 @@ const Picker = ({ data }: PickerProps) => {
         <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-
-      <Link href={getNextLinkHref()}>
-        <Button disabled={nextDisabled}>Next →</Button>
-      </Link>
+      {nextDisabled ? <Button disabled={nextDisabled}>Next →</Button> :
+        <Link href={getNextLinkHref()}>
+          <Button>Next →</Button>
+        </Link>
+      }
     </div>
   )
 }
