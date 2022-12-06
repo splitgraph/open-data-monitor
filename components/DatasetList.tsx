@@ -4,6 +4,7 @@ import styles from './Dataset.module.css';
 import spinnerStyles from './Spinner.module.css'
 import { type DiffResponse } from '../data/seafowl'
 import DatasetJumpTo from './DatasetJumpTo';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
 export interface DatasetType {
   domain: string;
@@ -58,9 +59,10 @@ const DatasetList = ({ data, error }: DatasetListProps) => {
           {
             Object.entries(rolledUp).map(([domain, datasets]) => {
               return (
-                <a id={`${domain}`} key={domain} >
-                  <div className={styles.datasetAndDomain}>
-                    <h3>{domain}</h3>
+                <div key={domain} className={styles.datasetAndDomain}>
+                  <a id={`${domain}`} key={domain}>&nbsp;</a>
+                  <h3><a href={`http://${domain}`}>{domain}</a> <ExternalLinkIcon /></h3>
+                  <>
                     {
                       datasets.map(({ id, name, description, is_added }) =>
                         <Dataset key={name + id}
@@ -69,8 +71,8 @@ const DatasetList = ({ data, error }: DatasetListProps) => {
                         />
                       )
                     }
-                  </div>
-                </a>
+                  </>
+                </div>
               )
             }
             )
