@@ -17,16 +17,10 @@ export interface SSRPageProps {
 const Home: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
 
-  const setTimestamp = (value: string) => {
-    router.replace({
-      pathname: `/${value}`,
-    });
-  }
-
   return (
     <SWRConfig value={{ fallback }}>
       <RootLayout>
-        <PickerContainer timestamp={fallback[latestKnownDay]} setTimestamp={setTimestamp} />
+        <PickerContainer timestamp={fallback[latestKnownDay]} />
         <DailyDatasetList timestamp={fallback[latestKnownDay]} />
       </RootLayout >
     </SWRConfig>

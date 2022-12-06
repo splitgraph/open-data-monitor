@@ -1,35 +1,27 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
+import type { SSRPageProps } from '..'
+import { timestampAppendix } from '../../util'
 import { seafowlFetcher, latestKnownWeek, picker, weeklyDiff } from '../../data/seafowl'
 import RootLayout from '../../layouts/Root'
 import WeeklyDatasetList from '../../components/WeeklyDatasetList'
 import PickerContainer from '../../components/PickerContainer'
-import { SSRPageProps } from '..'
 
 const WeekPage: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
   const { week } = router.query;
-  console.log({ fallback })
+  const weekTimestamp = `${week}${timestampAppendix}`;
 
   if (router.isFallback) {
     return <div>Loading...</div>
   }
 
-  const setTimestamp = (value: string) => {
-    const newQueryParams = { ...router.query, week: value };
-
-    router.replace({
-      pathname: router.pathname,
-      query: newQueryParams,
-    });
-  }
-
   return (
     <SWRConfig value={{ fallback }}>
       <RootLayout>
-        <PickerContainer timestamp={week as string} setTimestamp={setTimestamp} />
-        <WeeklyDatasetList timestamp={week as string} />
+        <PickerContainer timestamp={weekTimestamp} />
+        <WeeklyDatasetList timestamp={weekTimestamp} />
       </RootLayout>
     </SWRConfig>
   )
@@ -37,9 +29,11 @@ const WeekPage: NextPage<SSRPageProps> = ({ fallback }) => {
 WeekPage.getInitialProps = async ({ query }) => {
   const latestKnownWeekRaw = await seafowlFetcher(latestKnownWeek);
   const { latest } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
+  console.log({ latest })
 
   // visiting `/week` uses 'latest known week'; visiting `/week/2022-12-01...` passes requested date in for hydration
-  const timestamp = query.week as string || latest;
+  const timestamp = (query.week as string + timestampAppendix) || latest;
+  console.log('week timestamp', timestamp)
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
 
   return {

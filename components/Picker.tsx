@@ -8,10 +8,9 @@ import Button from './Button'
 import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
-  setTimestamp: (timestamp: string) => void;
   data: Array<TimestampDirection> | undefined;
 }
-const Picker = ({ data, setTimestamp }: PickerProps) => {
+const Picker = ({ data }: PickerProps) => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false); // improve UX of Picker when an <option> is chosen
   const response = useMemo(() =>
@@ -24,32 +23,33 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setIsLoading(true);
     const { dataset } = event.target.options[event.target.selectedIndex];
+    const trimmedTimestamp = dataset['path']?.slice(0, 10)
     if (event.target.value.length) { // it's /week or /month
-      router.push(`/${event.target.value}/${dataset['path']}`)
+      router.push(`/${event.target.value}/${trimmedTimestamp}`)
     } else {
-      router.push(`/${dataset['path']}`) // when event.target.value === empty string, it's a day
+      router.push(`/${trimmedTimestamp}`) // when event.target.value === empty string, it's a day
     }
   }
 
   const getPrev = () => {
     switch (dropdownIndex) {
       case 'week':
-        return response.prev_week
+        return response.prev_week.slice(0, 10)
       case 'month':
-        return response.prev_month;
+        return response.prev_month.slice(0, 10);
       default:  // day - either '/' or '/2022-10-24%20blahblah'
-        return response.prev_day;
+        return response.prev_day.slice(0, 10);
     }
   }
 
   const getNext = () => {
     switch (dropdownIndex) {
       case 'week':
-        return response.next_week;
+        return response.next_week.slice(0, 10)
       case 'month':
-        return response.next_month
+        return response.next_month.slice(0, 10)
       default:  // day - either '/' or '/2022-10-24%20blahblah'
-        return response.next_day
+        return response.next_day.slice(0, 10)
     }
   }
 

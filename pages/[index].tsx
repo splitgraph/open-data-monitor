@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { SWRConfig } from 'swr'
 import type { SSRPageProps } from './index';
+import { timestampAppendix } from '../util'
 import { seafowlFetcher, picker, dailyDiff } from '../data/seafowl'
 import RootLayout from '../layouts/Root'
 import DailyDatasetList from '../components/DailyDatasetList'
@@ -12,19 +13,11 @@ import PickerContainer from '../components/PickerContainer'
 const DayPage: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
 
-  const setTimestamp = (value: string) => {
-    const newQueryParams = { ...router.query, index: value };
-
-    router.replace({
-      pathname: router.pathname,
-      query: newQueryParams,
-    });
-  }
 
   return (
     <SWRConfig value={{ fallback }}>
       <RootLayout>
-        <PickerContainer timestamp={fallback['timestamp']} setTimestamp={setTimestamp} />
+        <PickerContainer timestamp={fallback['timestamp']} />
         <DailyDatasetList timestamp={fallback['timestamp']} />
       </RootLayout >
     </SWRConfig>
@@ -33,7 +26,7 @@ const DayPage: NextPage<SSRPageProps> = ({ fallback }) => {
 
 DayPage.getInitialProps = async ({ query }) => {
   /** so long as this code lives in [index].tsx, query.index should always be defined */
-  const timestamp = query.index as string;
+  const timestamp = query.index as string + timestampAppendix;
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(dailyDiff(timestamp))])
 
   return {
