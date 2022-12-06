@@ -11,3 +11,12 @@
  */
 export const getUTCTodayTimestamp = () =>
   `${new Date(new Date().getTime()).toISOString().slice(0, 10)} 00:00:00`
+
+
+/**
+ * SQL `timestamp`s require the following to be appended to YYYY-MM-DD
+ * We don't want to show that in the URL; thus we need to string manip
+ * accordingly. Make the string available to all the places that need.
+ * 
+*/
+export const timestampAppendix = ' 00:00:00'
