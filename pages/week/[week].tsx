@@ -10,6 +10,7 @@ import { SSRPageProps } from '..'
 const WeekPage: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
   const { week } = router.query;
+  console.log({ fallback })
 
   if (router.isFallback) {
     return <div>Loading...</div>
@@ -33,9 +34,12 @@ const WeekPage: NextPage<SSRPageProps> = ({ fallback }) => {
     </SWRConfig>
   )
 }
-WeekPage.getInitialProps = async () => {
+WeekPage.getInitialProps = async ({ query }) => {
   const latestKnownWeekRaw = await seafowlFetcher(latestKnownWeek);
-  const { latest: timestamp } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
+  const { latest } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
+
+  // visiting `/week` uses 'latest known week'; visiting `/week/2022-12-01...` passes requested date in for hydration
+  const timestamp = query.week as string || latest;
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
 
   return {

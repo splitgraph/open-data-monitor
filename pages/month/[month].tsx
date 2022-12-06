@@ -33,9 +33,10 @@ const MonthPage: NextPage<SSRPageProps> = ({ fallback }) => {
   )
 }
 
-MonthPage.getInitialProps = async () => {
+MonthPage.getInitialProps = async ({ query }) => {
   const latestKnownMonthRaw = await seafowlFetcher(latestKnownMonth);
-  const { latest: timestamp } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
+  const { latest } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
+  const timestamp = query.month as string || latest;
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(monthlyDiff(timestamp))])
 
   return {
