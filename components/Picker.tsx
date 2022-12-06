@@ -26,8 +26,9 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
     const { dataset } = event.target.options[event.target.selectedIndex];
     if (event.target.value.length) { // it's /week or /month
       router.push(`/${event.target.value}/${dataset['path']}`)
+    } else {
+      router.push(`/${dataset['path']}`) // when event.target.value === empty string, it's a day
     }
-    router.push(`/${dataset['path']}`) // when event.target.value === empty string, it's a day
   }
 
   const getPrev = () => {
@@ -41,10 +42,6 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
     }
   }
 
-  const goPrev = () => {
-    setTimestamp(getPrev())
-  }
-
   const getNext = () => {
     switch (dropdownIndex) {
       case 'week':
@@ -56,8 +53,29 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
     }
   }
 
-  const goNext = () => {
-    setTimestamp(getNext())
+  const getPrevLinkHref = () => {
+    if (!prevDisabled) {
+      if (dropdownIndex) {
+        return `/${dropdownIndex}/${getPrev()}`
+      } else {
+        return getPrev()
+      }
+    } else {
+      // <Link> disallows href attr of undefined. Thus, use empty string
+      return ''
+    }
+  }
+
+  const getNextLinkHref = () => {
+    if (!nextDisabled) {
+      if (dropdownIndex) {
+        return `/${dropdownIndex}/${getNext()}`
+      } else {
+        return getNext()
+      }
+    } else {
+      return ''
+    }
   }
 
   const goToday = () => {
@@ -78,7 +96,9 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
 
   return (
     <div className={styles.root}>
-      <Button onClick={goPrev} disabled={prevDisabled}>← Previous</Button>
+      <Link href={getPrevLinkHref()}>
+        <Button disabled={prevDisabled}>← Previous</Button>
+      </Link>
       <span className={styles.padding}>&nbsp;</span>
       <select className={selectStyles.select}
         value={dropdownIndex}
@@ -91,9 +111,11 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
       </select>
       <span className={styles.padding}>&nbsp;</span>
 
-      <Button onClick={goNext} disabled={nextDisabled}>Next →</Button>
-      <Link href={`/${getNext()}`}>&nbsp;</Link>
+      <Link href={getNextLinkHref()}>
+        <Button disabled={nextDisabled}>Next →</Button>
+      </Link>
     </div>
   )
 }
 export default Picker
+
