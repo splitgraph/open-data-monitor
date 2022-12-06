@@ -73,7 +73,7 @@ const AddsSubs = ({ addsSubs }: { addsSubs: { adds: number, subs: number } }) =>
 }
 
 const Adds = ({ adds }: { adds: number }) =>
-  adds > 0 ? <>{`+ ${adds} `}</> : null
+  adds > 0 ? <>{`+${adds} `}</> : null
 
 const Subs = ({ subs }: { subs: number }) =>
-  subs > 0 ? <>{`- ${subs} `}</> : null
+  subs > 0 ? <>{`-${subs} `}</> : null

@@ -60,7 +60,7 @@ const DatasetList = ({ data, error }: DatasetListProps) => {
             Object.entries(rolledUp).map(([domain, datasets]) => {
               return (
                 <div key={domain} className={styles.datasetAndDomain}>
-                  <a id={`${domain}`} key={domain}>&nbsp;</a>
+                  <a id={`${domain}`} key={domain} style={{display: 'hidden'}}>&nbsp;</a>
                   <h3><a href={`http://${domain}`}>{domain}</a> <ExternalLinkIcon /></h3>
                   <>
                     {
