@@ -31,7 +31,7 @@ const DatasetJumpTo = ({ rolledUp, showSelect }: DatasetJumpToProps) => {
           {
             Object.entries(rolledUp).map(([domain, datasets]) =>
               <div key={domain} className={styles.jumpToItem}>
-                <a href={`#${domain} `}>
+                <a href={`#${domain}`}>
                   {domain}
                 </a>&nbsp;
                 <AddsSubs addsSubs={getAddsSubs(datasets)} />
