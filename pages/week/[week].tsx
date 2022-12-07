@@ -1,8 +1,9 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { SWRConfig } from 'swr'
+import { SWRConfig, unstable_serialize } from 'swr'
 import type { SSRPageProps } from '..'
-import { timestampAppendix } from '../../util'
+import { unifiedFetcher, SplitgraphURLBatch } from '../../data';
+import { timestampAppendix, selectIdNameDomain } from '../../util'
 import { seafowlFetcher, latestKnownWeek, picker, weeklyDiff } from '../../data/seafowl'
 import RootLayout from '../../layouts/Root'
 import WeeklyDatasetList from '../../components/WeeklyDatasetList'
@@ -35,12 +36,15 @@ WeekPage.getInitialProps = async ({ query }) => {
   const timestamp = (query.week as string + timestampAppendix) || latest;
   console.log('week timestamp', timestamp)
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
+  const datasets = selectIdNameDomain(responses[1])
+  const gqlResponse = await unifiedFetcher(SplitgraphURLBatch, datasets)
 
   return {
     fallback: {
       [latestKnownWeek]: timestamp,
       [picker(timestamp)]: responses[0],
-      [weeklyDiff(timestamp)]: responses[1]
+      [weeklyDiff(timestamp)]: responses[1],
+      [unstable_serialize([SplitgraphURLBatch, datasets])]: gqlResponse
     }
   }
 }
