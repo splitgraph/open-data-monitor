@@ -11,9 +11,12 @@ const Dataset = ({ id, name, domain, description, is_added, splitgraphURL }: Dat
   return (
     <div className={styles.dataset}>
       <h4 style={{ width: '88%' }}>
-        <a href={splitgraphURL}>
-          {name}
-        </a>
+        {is_added ?
+          <a href={splitgraphURL}>
+            {name}
+          </a>
+          : <>{name}</>
+        }
       </h4>
       <div style={{
         position: 'absolute',
