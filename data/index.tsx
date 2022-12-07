@@ -39,8 +39,16 @@ export const SplitgraphURLQuery = gql
     }
 }
 `
+export const SplitgraphURLBatch = gql
+  `query getSocrataRepo($datasets: [SocrataDatasetKey!]!) {
+    socrataExternalRepositories (datasets: $datasets) {
+        namespace
+        repository
+    }
+}
+`
 
-export const unifiedFetcher = (query: string) => request(UNIFIED_GQL_API, query)
+export const unifiedFetcher = (query: string, variables: any) => request(UNIFIED_GQL_API, query, variables)
 
 /**
  * I observed that "20220822" yields diffs but "20220822-180102"
