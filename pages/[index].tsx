@@ -1,5 +1,4 @@
 import type { NextPage } from 'next'
-import { useRouter } from 'next/router'
 import { SWRConfig, unstable_serialize } from 'swr'
 import type { SSRPageProps } from './index';
 import { selectIdNameDomain, timestampAppendix } from '../util'
