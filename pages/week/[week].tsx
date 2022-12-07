@@ -30,11 +30,9 @@ const WeekPage: NextPage<SSRPageProps> = ({ fallback }) => {
 WeekPage.getInitialProps = async ({ query }) => {
   const latestKnownWeekRaw = await seafowlFetcher(latestKnownWeek);
   const { latest } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
-  console.log({ latest })
 
   // visiting `/week` uses 'latest known week'; visiting `/week/2022-12-01...` passes requested date in for hydration
   const timestamp = (query.week as string + timestampAppendix) || latest;
-  console.log('week timestamp', timestamp)
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
   const datasets = selectIdNameDomain(responses[1])
   const gqlResponse = await unifiedFetcher(SplitgraphURLBatch, datasets)
