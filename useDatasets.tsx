@@ -1,10 +1,10 @@
 import useSWR from 'swr';
 import { ddnFetcher, getAddedDeletedDatasetsQuery } from './data'
-import { type DatasetType } from './components/DatasetList'
+import { type DatasetWithSplitgraphURL } from './components/DatasetList'
 
 interface DDNResponse {
   success: string;
-  rows: Array<DatasetType>;
+  rows: Array<DatasetWithSplitgraphURL>;
 }
 
 interface UseDatasetsParams {
