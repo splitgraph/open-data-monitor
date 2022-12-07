@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import useSWR from 'swr'
 import { seafowlFetcher, weeklyDiff } from '../data/seafowl';
-import { type DatasetType } from './DatasetList'
+import { type DatasetWithSplitgraphURL } from './DatasetList'
 
 interface MonthlyDiffProps {
   timestamp: string;
@@ -9,7 +9,7 @@ interface MonthlyDiffProps {
 
 
 const MonthlyDiff = ({ timestamp }: MonthlyDiffProps) => {
-  const { data, error } = useSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
+  const { data, error } = useSWR<Array<DatasetWithSplitgraphURL>>(weeklyDiff(timestamp), seafowlFetcher);
 
   return (
     <div>

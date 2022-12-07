@@ -36,7 +36,6 @@ const RangePicker = ({ tags, range, setRange }: RangePickerProps) => {
   // Weirdly, directly setting router.query.from/to causes lots of seemingly
   // spurious/unwanted re-renders. Will probably remove this in the near future
   // const setRangeQueryParam = (range: DateRange | undefined) => {
-  //   console.log({ range })
   //   if (range) {
   //     const newQueryParameters = {
   //       ...router.query,
@@ -62,7 +61,6 @@ const RangePicker = ({ tags, range, setRange }: RangePickerProps) => {
   //     from: dateifyTag(from) || undefined,
   //     ...(to && { from: dateifyTag(to) })
   //   }
-  //   console.log('getRange()', range)
   //   return range
   // }
 
