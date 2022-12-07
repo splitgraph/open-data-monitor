@@ -40,48 +40,42 @@ const Picker = ({ data }: PickerProps) => {
   const getPrev = () => {
     switch (dropdownIndex) {
       case 'week':
-        return response.prev_week.slice(0, 10)
+        return response?.prev_week && response.prev_week.slice(0, 10)
       case 'month':
-        return response.prev_month.slice(0, 10);
-      default:  // day - either '/' or '/2022-10-24%20blahblah'
-        return response.prev_day.slice(0, 10);
+        return response?.prev_month && response?.prev_month.slice(0, 10);
+      case '':// day - either '/' or '/2022-10-24%20blahblah'
+        return response?.prev_month && response?.prev_day.slice(0, 10);
+      default:
+        return ''
     }
   }
 
   const getNext = () => {
     switch (dropdownIndex) {
       case 'week':
-        return response.next_week.slice(0, 10)
+        return response?.next_week && response.next_week.slice(0, 10)
       case 'month':
-        return response.next_month.slice(0, 10)
-      default:  // day - either '/' or '/2022-10-24%20blahblah'
-        return response.next_day.slice(0, 10)
+        return response?.next_month && response.next_month.slice(0, 10)
+      case '': // day - either '/' or '/2022-10-24%20blahblah'
+        return response?.next_day && response.next_day.slice(0, 10)
+      default:
+        return ''
     }
   }
 
   const getPrevLinkHref = () => {
-    if (!prevDisabled) {
-      if (dropdownIndex) {
-        return `/${dropdownIndex}/${getPrev()}`
-      } else {
-        return getPrev()
-      }
-    } else {
+    if (isLoading || prevDisabled) {
       // <Link> disallows href attr of undefined. Thus, use empty string
       return ''
     }
+    return dropdownIndex ? `/${dropdownIndex}/${getPrev()}` : getPrev()
   }
 
   const getNextLinkHref = () => {
-    if (!nextDisabled) {
-      if (dropdownIndex) {
-        return `/${dropdownIndex}/${getNext()}`
-      } else {
-        return getNext()
-      }
-    } else {
+    if (isLoading || nextDisabled) {
       return ''
     }
+    return dropdownIndex ? `/${dropdownIndex}/${getNext()}` : getNext()
   }
 
   const goToday = () => {
@@ -94,7 +88,7 @@ const Picker = ({ data }: PickerProps) => {
       ? !(Direction.prev_week in response)
       : !(Direction.prev_month in response)
 
-  const nextDisabled = isLoading || dropdownIndex === ''
+  const nextDisabled = response === undefined || dropdownIndex === ''
     ? !(Direction.next_day in response)
     : dropdownIndex === 'week'
       ? !(Direction.next_week in response)
@@ -102,7 +96,7 @@ const Picker = ({ data }: PickerProps) => {
 
   return (
     <div className={styles.root}>
-      {prevDisabled ? <Button disabled={prevDisabled}>← Previous </Button> :
+      {prevDisabled ? <Button disabled={true}>← Previous </Button> :
         <Link href={getPrevLinkHref()}>
           <Button>← Previous </Button>
         </Link>
@@ -118,7 +112,7 @@ const Picker = ({ data }: PickerProps) => {
         <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-      {nextDisabled ? <Button disabled={nextDisabled}>Next →</Button> :
+      {nextDisabled ? <Button disabled={true}>Next →</Button> :
         <Link href={getNextLinkHref()}>
           <Button>Next →</Button>
         </Link>
