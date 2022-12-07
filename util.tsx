@@ -1,3 +1,5 @@
+import { type DiffResponse } from "./data/seafowl"
+
 /**
  * Helper to convert JS Date() obj to a valid SQL timestamp
  * Because new Date.getTime() returns UTC time anyway, SSR/CSR 
@@ -20,3 +22,7 @@ export const getUTCTodayTimestamp = () =>
  * 
 */
 export const timestampAppendix = ' 00:00:00'
+
+/** Jelper function to extract just id/domain/name from a full DatasetDiff */
+export const selectIdNameDomain = (diffData: DiffResponse[] | undefined) =>
+  ({ datasets: diffData?.map(({ id, domain, name }) => ({ id, domain, name })) })
