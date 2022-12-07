@@ -8,10 +8,9 @@ import Button from './Button'
 import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
-  setTimestamp: (timestamp: string) => void;
   data: Array<TimestampDirection> | undefined;
 }
-const Picker = ({ data, setTimestamp }: PickerProps) => {
+const Picker = ({ data }: PickerProps) => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false); // improve UX of Picker when an <option> is chosen
   const response = useMemo(() =>
@@ -24,40 +23,59 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setIsLoading(true);
     const { dataset } = event.target.options[event.target.selectedIndex];
-    if (event.target.value.length) { // it's /week or /month
-      router.push(`/${event.target.value}/${dataset['path']}`)
+
+    const trimmedTimestamp = dataset['path']?.slice(0, 10)
+    if (typeof trimmedTimestamp === 'undefined') {
+      // in case Picker query didn't come back with a smaller time unit (e.g. equivalent_day when rendering month)
+      setIsLoading(false);
+      return
     }
-    router.push(`/${dataset['path']}`) // when event.target.value === empty string, it's a day
+    if (event.target.value.length) { // it's /week or /month
+      router.push(`/${event.target.value}/${trimmedTimestamp}`)
+    } else {
+      router.push(`/${trimmedTimestamp}`) // when event.target.value === empty string, it's a day
+    }
   }
 
   const getPrev = () => {
     switch (dropdownIndex) {
       case 'week':
-        return response.prev_week
+        return response?.prev_week && response.prev_week.slice(0, 10)
       case 'month':
-        return response.prev_month;
-      default:  // day - either '/' or '/2022-10-24%20blahblah'
-        return response.prev_day;
+        return response?.prev_month && response?.prev_month.slice(0, 10);
+      case '':// day - either '/' or '/2022-10-24%20blahblah'
+        return response?.prev_month && response?.prev_day.slice(0, 10);
+      default:
+        return ''
     }
-  }
-
-  const goPrev = () => {
-    setTimestamp(getPrev())
   }
 
   const getNext = () => {
     switch (dropdownIndex) {
       case 'week':
-        return response.next_week;
+        return response?.next_week && response.next_week.slice(0, 10)
       case 'month':
-        return response.next_month
-      default:  // day - either '/' or '/2022-10-24%20blahblah'
-        return response.next_day
+        return response?.next_month && response.next_month.slice(0, 10)
+      case '': // day - either '/' or '/2022-10-24%20blahblah'
+        return response?.next_day && response.next_day.slice(0, 10)
+      default:
+        return ''
     }
   }
 
-  const goNext = () => {
-    setTimestamp(getNext())
+  const getPrevLinkHref = () => {
+    if (isLoading || prevDisabled) {
+      // <Link> disallows href attr of undefined. Thus, use empty string
+      return ''
+    }
+    return dropdownIndex ? `/${dropdownIndex}/${getPrev()}` : getPrev()
+  }
+
+  const getNextLinkHref = () => {
+    if (isLoading || nextDisabled) {
+      return ''
+    }
+    return dropdownIndex ? `/${dropdownIndex}/${getNext()}` : getNext()
   }
 
   const goToday = () => {
@@ -70,7 +88,7 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
       ? !(Direction.prev_week in response)
       : !(Direction.prev_month in response)
 
-  const nextDisabled = isLoading || dropdownIndex === ''
+  const nextDisabled = response === undefined || dropdownIndex === ''
     ? !(Direction.next_day in response)
     : dropdownIndex === 'week'
       ? !(Direction.next_week in response)
@@ -78,9 +96,11 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
 
   return (
     <div className={styles.root}>
-      <Link href={`/${getPrev()}`}>
-        <Button disabled={prevDisabled}>← Previous</Button>
-      </Link>
+      {prevDisabled ? <Button disabled={true}>← Previous </Button> :
+        <Link href={getPrevLinkHref()}>
+          <Button>← Previous </Button>
+        </Link>
+      }
       <span className={styles.padding}>&nbsp;</span>
       <select className={selectStyles.select}
         value={dropdownIndex}
@@ -92,10 +112,13 @@ const Picker = ({ data, setTimestamp }: PickerProps) => {
         <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
       </select>
       <span className={styles.padding}>&nbsp;</span>
-      <Link href={`/${getNext()}`}>
-        <Button disabled={nextDisabled}>Next →</Button>
-      </Link>
+      {nextDisabled ? <Button disabled={true}>Next →</Button> :
+        <Link href={getNextLinkHref()}>
+          <Button>Next →</Button>
+        </Link>
+      }
     </div>
   )
 }
 export default Picker
+

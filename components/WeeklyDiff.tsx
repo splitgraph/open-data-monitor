@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import useImmutableSWR from 'swr/immutable'
 import { seafowlFetcher, weeklyDiff } from '../data/seafowl';
-import { type DatasetType } from './DatasetList'
+import { type DatasetWithSplitgraphURL } from './DatasetList'
 
 interface WeeklyDiffProps {
   timestamp: string;
@@ -9,7 +9,7 @@ interface WeeklyDiffProps {
 
 
 const WeeklyDiff = ({ timestamp }: WeeklyDiffProps) => {
-  const { data, error } = useImmutableSWR<Array<DatasetType>>(weeklyDiff(timestamp), seafowlFetcher);
+  const { data, error } = useImmutableSWR<Array<DatasetWithSplitgraphURL>>(weeklyDiff(timestamp), seafowlFetcher);
 
   return (
     <div>

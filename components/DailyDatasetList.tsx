@@ -1,4 +1,5 @@
 import useDailyDiff from '../useDailyDiff';
+import useSplitgraphRepoUrls from '../useSplitgraphRepoUrls';
 import DatasetList from './DatasetList';
 
 interface DailyDatasetListProps {
@@ -6,7 +7,12 @@ interface DailyDatasetListProps {
 }
 const DailyDatasetList = ({ timestamp }: DailyDatasetListProps) => {
   const { data, error } = useDailyDiff(timestamp);
-  return <DatasetList data={data} error={error} />
+  /** Batch requests (GQL) for Splitgraph URLs for all provided datasets
+   * @returns the same datasets, but injected with their individual splitgraphURL
+   */
+  const { dataWithSplitgraphURLs } = useSplitgraphRepoUrls(data);
+
+  return <DatasetList data={dataWithSplitgraphURLs} error={error} />
 }
 
 

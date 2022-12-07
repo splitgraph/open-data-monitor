@@ -1,5 +1,7 @@
 import { type BareFetcher } from 'swr';
+import { webcrypto } from 'crypto'
 const SEAFOWL_API = 'https://seafowl-socrata.fly.dev/q'
+const SEAFOWL_ROOT = 'https://seafowl-socrata.fly.dev'
 
 /**
 *  Datasets diffs between the specified tags (roughly, "dates")
@@ -32,7 +34,7 @@ ORDER BY domain, name, is_added`
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const dailyDiff = (timestamp: string = '2022-11-02 00:00:00') =>
-  `SELECT d.domain, d.name, is_added, id, d.description
+  `SELECT d.domain, d.name, is_added, id, d.description, d.id
 FROM socrata.daily_diff dd INNER JOIN socrata.all_datasets d
 ON dd.id = d.id
 WHERE dd.day::text = '${timestamp}'
@@ -52,7 +54,7 @@ export interface DiffResponse {
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const weeklyDiff = (timestamp: string = '2022-10-31 00:00:00') =>
-  `SELECT d.domain, d.name, is_added, id, d.description
+  `SELECT d.domain, d.name, is_added, id, d.description, d.id
 FROM socrata.weekly_diff w INNER JOIN socrata.all_datasets d
 ON w.id = d.id
 WHERE w.week::text = '${timestamp}'
@@ -83,7 +85,7 @@ GROUP BY 1
 ORDER BY 1 ASC`
 
 export const monthlyDiff = (timestamp: string) =>
-  `SELECT month, d.domain, d.name, is_added, id, d.description
+  `SELECT month, d.domain, d.name, is_added, id, d.description, d.id
 FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
 ON m.id = d.id
 WHERE m.month::text = '${timestamp}'
@@ -226,9 +228,10 @@ export interface AddedRemovedWeek {
   week: string;
 }
 //@ts-ignore TODO figure out where we should import PublicConfiguration from
-export const seafowlFetcher = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
+export const seafowlFetcherUncached = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
   fetch(SEAFOWL_API, {
     method: "POST",
+    // TODO: https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api - use GET
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ query })
   }).then(async (response) => {
@@ -237,3 +240,40 @@ export const seafowlFetcher = (query: string): Partial<PublicConfiguration<Added
   }).catch((reason) => {
     console.error(reason)
   });
+
+
+/** GET-based Seafowl fetcher
+ * If you GET + pass a query hash in, Seafowl plays nice fetch()'s built-in cache semantics
+ * 
+ * @see https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api
+ */
+// @ts-ignore
+export const seafowlFetcher = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
+  const query = sql.trim().replace(/(?:\r\n|\r|\n)/g, " ");
+
+  /** Select appropriate crypto module, depending on SSR or CSR (Node.js vs browser)
+   * window.crypto in-browser supports SubtleCrypto
+   * for Node.js it lives inside crypto.webcrypto.subtle
+   * Need to use the appropriate module depending on context
+   */
+  const theCrypto = typeof window === "undefined" ? webcrypto : crypto;
+
+  const digest = await theCrypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(query)
+  );
+  const hash = [...new Uint8Array(digest)]
+    .map((x) => x.toString(16).padStart(2, "0"))
+    .join("");
+
+  return fetch(`${SEAFOWL_ROOT}/q/${hash}.csv`, {
+    headers: { "X-Seafowl-Query": query }
+  }).then(async (response) => {
+    const responseText = await response.text();
+    return responseText ? responseText.trim().split("\n").map(JSON.parse as any) : [];
+  }).catch((reason) => {
+    console.error(reason)
+  });
+}
+
+

@@ -1,48 +1,47 @@
-import type { NextPage, GetServerSideProps } from 'next'
+import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { SWRConfig } from 'swr'
+import { SWRConfig, unstable_serialize } from 'swr'
+import type { SSRPageProps } from '..'
+import { selectIdNameDomain, timestampAppendix } from '../../util'
 import { seafowlFetcher, latestKnownMonth, picker, monthlyDiff } from '../../data/seafowl'
+import { unifiedFetcher, SplitgraphURLBatch } from '../../data';
 import RootLayout from '../../layouts/Root'
 import MonthlyDatasetList from '../../components/MonthlyDatasetList'
 import PickerContainer from '../../components/PickerContainer'
 
-const MonthPage: NextPage<{ fallback: any }> = ({ fallback }) => {
+const MonthPage: NextPage<SSRPageProps> = ({ fallback }) => {
   const router = useRouter();
   const { month } = router.query;
+  const monthTimestamp = `${month}${timestampAppendix}`;
 
   if (router.isFallback) {
     return <div>Loading...</div>
-  }
-  const setTimestamp = (value: string) => {
-    const newQueryParams = { ...router.query, month: value };
-
-    router.replace({
-      pathname: router.pathname,
-      query: newQueryParams,
-    });
   }
 
   return (
     <SWRConfig value={{ fallback }}>
       <RootLayout>
-        <PickerContainer timestamp={month as string} setTimestamp={setTimestamp} />
-        <MonthlyDatasetList timestamp={month as string} />
+        <PickerContainer timestamp={monthTimestamp} />
+        <MonthlyDatasetList timestamp={monthTimestamp} />
       </RootLayout>
     </SWRConfig>
   )
 }
-export const getServerSideProps: GetServerSideProps = async () => {
+
+MonthPage.getInitialProps = async ({ query }) => {
   const latestKnownMonthRaw = await seafowlFetcher(latestKnownMonth);
-  const { latest: timestamp } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
+  const { latest } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
+  const timestamp = (query.month as string + timestampAppendix) || latest;
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(monthlyDiff(timestamp))])
+  const datasets = selectIdNameDomain(responses[1])
+  const gqlResponse = await unifiedFetcher(SplitgraphURLBatch, datasets)
 
   return {
-    props: {
-      fallback: {
-        [latestKnownMonthRaw]: timestamp,
-        [picker(timestamp)]: responses[0],
-        [monthlyDiff(timestamp)]: responses[1]
-      }
+    fallback: {
+      [latestKnownMonthRaw]: timestamp,
+      [picker(timestamp)]: responses[0],
+      [monthlyDiff(timestamp)]: responses[1],
+      [unstable_serialize([SplitgraphURLBatch, datasets])]: gqlResponse
     }
   }
 }

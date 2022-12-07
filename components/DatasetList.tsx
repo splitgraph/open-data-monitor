@@ -4,18 +4,13 @@ import styles from './Dataset.module.css';
 import spinnerStyles from './Spinner.module.css'
 import { type DiffResponse } from '../data/seafowl'
 import DatasetJumpTo from './DatasetJumpTo';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
-export interface DatasetType {
-  domain: string;
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-  is_added: boolean;
+export interface DatasetWithSplitgraphURL extends DiffResponse {
+  splitgraphURL: string;
 }
 
-export type DatasetNoDomain = Omit<DiffResponse, "domain">
+export type DatasetNoDomain = Omit<DatasetWithSplitgraphURL, "domain">
 export interface RolledUpDatasets {
   [domain: string]: Array<DatasetNoDomain>;
 }
@@ -58,19 +53,21 @@ const DatasetList = ({ data, error }: DatasetListProps) => {
           {
             Object.entries(rolledUp).map(([domain, datasets]) => {
               return (
-                <a id={`${domain}`} key={domain} >
-                  <div className={styles.datasetAndDomain}>
-                    <h3>{domain}</h3>
+                <div key={domain} className={styles.datasetAndDomain}>
+                  <a id={`${domain}`} key={domain} style={{ display: 'hidden' }}>&nbsp;</a>
+                  <h3><a href={`http://${domain}`}>{domain}</a> <ExternalLinkIcon /></h3>
+                  <>
                     {
-                      datasets.map(({ id, name, description, is_added }) =>
+                      datasets.map(({ id, name, description, is_added, splitgraphURL }) =>
                         <Dataset key={name + id}
                           id={id} name={name} domain={domain}
-                          description={description} isAdded={is_added}
+                          description={description} is_added={is_added}
+                          splitgraphURL={splitgraphURL}
                         />
                       )
                     }
-                  </div>
-                </a>
+                  </>
+                </div>
               )
             }
             )
