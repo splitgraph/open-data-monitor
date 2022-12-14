@@ -1,4 +1,5 @@
 import useWeeklyDiff from '../useWeeklyDiff';
+import useSplitgraphRepoUrls from '../useSplitgraphRepoUrls';
 import DatasetList from './DatasetList';
 
 interface DailyDatasetListProps {
@@ -6,8 +7,9 @@ interface DailyDatasetListProps {
 }
 const DailyDatasetList = ({ timestamp }: DailyDatasetListProps) => {
   const { data, error } = useWeeklyDiff(timestamp);
+  const { dataWithSplitgraphURLs } = useSplitgraphRepoUrls(data);
 
-  return <DatasetList data={data} error={error} />
+  return <DatasetList data={dataWithSplitgraphURLs} error={error} />
 }
 
 
