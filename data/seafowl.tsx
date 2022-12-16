@@ -1,7 +1,7 @@
 import { type BareFetcher } from 'swr';
 import { webcrypto } from 'crypto'
-const SEAFOWL_API = 'https://seafowl-socrata.fly.dev/q'
-const SEAFOWL_ROOT = 'https://seafowl-socrata.fly.dev'
+const SEAFOWL_API = 'https://socfeed-data.splitgraph.io/q'
+const SEAFOWL_ROOT = 'https://socfeed-data.splitgraph.io'
 
 /**
 *  Datasets diffs between the specified tags (roughly, "dates")
