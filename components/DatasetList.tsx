@@ -48,7 +48,7 @@ const DatasetList = ({ data, error, timestamp }: DatasetListProps) => {
         <div>
           {data.length} dataset{data.length > 1 ? 's' : ''} added/removed&nbsp;
           {selectedTimeUnit === 'day' ? `${selectedTimeUnit} of` : `${selectedTimeUnit} starting`}&nbsp;
-          {timestamp?.slice(0, 10)}
+          {new Date(timestamp?.slice(0, 10)).toLocaleDateString("en", { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })}
         </div>
       }
       <div className={styles.datasetsList}>
