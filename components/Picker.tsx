@@ -3,8 +3,8 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import styles from './Picker.module.css'
-import selectStyles from './Select.module.css'
 import Button from './Button'
+import ButtonGroup from './ButtonGroup';
 import { type TimestampDirection, Direction } from '../data/seafowl';
 
 interface PickerProps {
@@ -17,25 +17,8 @@ const Picker = ({ data }: PickerProps) => {
     data ? Object.fromEntries(data.map(({ direction, timestamp }) => [direction, timestamp])) : {},
     [data]);
 
-  //intended to tie the path (e.g. /, /week. /month) to <option>
   const dropdownIndex = router.pathname.split('/')[1] === '[index]' ? '' : router.pathname.split('/')[1];
-
-  const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setIsLoading(true);
-    const { dataset } = event.target.options[event.target.selectedIndex];
-
-    const trimmedTimestamp = dataset['path']?.slice(0, 10)
-    if (typeof trimmedTimestamp === 'undefined') {
-      // in case Picker query didn't come back with a smaller time unit (e.g. equivalent_day when rendering month)
-      setIsLoading(false);
-      return
-    }
-    if (event.target.value.length) { // it's /week or /month
-      router.push(`/${event.target.value}/${trimmedTimestamp}`)
-    } else {
-      router.push(`/${trimmedTimestamp}`) // when event.target.value === empty string, it's a day
-    }
-  }
+  const selectedTimeUnit = router.pathname.split('/')[1] === '[index]' ? 'day' : router.pathname.split('/')[1];
 
   const getPrev = () => {
     switch (dropdownIndex) {
@@ -102,15 +85,13 @@ const Picker = ({ data }: PickerProps) => {
         </Link>
       }
       <span className={styles.padding}>&nbsp;</span>
-      <select className={selectStyles.select}
-        value={dropdownIndex}
-        disabled={isLoading}
-        onChange={handleChange}
-      >
-        <option value={""} data-path={response[Direction.equivalent_day]}>Day</option>
-        <option value={"week"} data-path={response[Direction.equivalent_week]}>Week</option>
-        <option value={"month"} data-path={response[Direction.equivalent_month]}>Month</option>
-      </select>
+      <ButtonGroup
+        selected={selectedTimeUnit}
+        isLoading={isLoading}
+        day={response[Direction.equivalent_day]}
+        week={response[Direction.equivalent_week]}
+        month={response[Direction.equivalent_month]}
+      />
       <span className={styles.padding}>&nbsp;</span>
       {nextDisabled ? <Button disabled={true}>Next →</Button> :
         <Link href={getNextLinkHref()}>

@@ -12,7 +12,6 @@ const Seafowl = ({ timestamp }: PickerContainerProps) => {
     <div>
       {!!error && <h4>Sorry, an error occurred.</h4>}
       <Picker data={data} />
-      <h4>{timestamp}</h4>
     </div>
   )
 }
