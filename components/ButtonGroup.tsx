@@ -16,23 +16,22 @@ interface ButtonGroupProps {
   isLoading: boolean;
 }
 const ButtonGroup = (props: ButtonGroupProps) => {
-  const { day, week, month, selected } = props;
-  console.log({ selected })
+  const { day, week, month, selected, ...rest } = props;
   return (
     <div className={styles.buttonGroup}>
-      <Button {...props}
+      <Button {...rest}
         unit={'day'} data-time={day}
         className={`${styles.btn} ${styles.leftButton} ${selected === 'day' ? styles.active : ''}`}
       >
         Day
       </Button>
-      <Button {...props}
+      <Button {...rest}
         unit={'week'} data-time={week}
         className={`${styles.btn} ${styles.midButton} ${selected === 'week' ? styles.active : ''}`}
       >
         Week
       </Button>
-      <Button {...props}
+      <Button {...rest}
         unit={'month'} data-time={month}
         className={`${styles.btn} ${styles.rightButton} ${selected === 'month' ? styles.active : ''}`}
       >
