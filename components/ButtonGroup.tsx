@@ -17,21 +17,25 @@ interface ButtonGroupProps {
 }
 const ButtonGroup = (props: ButtonGroupProps) => {
   const { day, week, month, selected, ...rest } = props;
+  console.log({ day, week, month })
   return (
     <div className={styles.buttonGroup}>
       <Button {...rest}
+        disabled={!Boolean(day)}
         unit={'day'} data-time={day}
         className={`${styles.btn} ${styles.leftButton} ${selected === 'day' ? styles.active : ''}`}
       >
         Day
       </Button>
       <Button {...rest}
+        disabled={!Boolean(week)}
         unit={'week'} data-time={week}
         className={`${styles.btn} ${styles.midButton} ${selected === 'week' ? styles.active : ''}`}
       >
         Week
       </Button>
       <Button {...rest}
+        disabled={!Boolean(month?.length)}
         unit={'month'} data-time={month}
         className={`${styles.btn} ${styles.rightButton} ${selected === 'month' ? styles.active : ''}`}
       >
@@ -47,8 +51,9 @@ interface ButtonProps {
   ["data-time"]?: string;
   isLoading: boolean;
   className?: string;
+  disabled: boolean;
 }
-const Button = ({ unit, isLoading, ...rest }: ButtonProps) => {
+const Button = ({ unit, isLoading, disabled, ...rest }: ButtonProps) => {
   const getLinkHref = () => {
     const time = rest["data-time"]?.slice(0, 10)
     if (isLoading) {
@@ -61,10 +66,10 @@ const Button = ({ unit, isLoading, ...rest }: ButtonProps) => {
   }
 
   return (
-    <Link href={getLinkHref()}>
-      <button {...rest} />
-    </Link>
-
+    disabled ? <button disabled={true} {...rest} /> :
+      <Link href={getLinkHref()} >
+        <button {...rest} />
+      </Link>
   )
 }
 
