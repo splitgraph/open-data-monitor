@@ -9,7 +9,7 @@ const MonthlyDatasetList = ({ timestamp }: MonthlyDatasetListProps) => {
   const { data, error } = useMonthlyDiff(timestamp);
   const { dataWithSplitgraphURLs } = useSplitgraphRepoUrls(data);
 
-  return <DatasetList data={dataWithSplitgraphURLs} error={error} />
+  return <DatasetList data={dataWithSplitgraphURLs} error={error} timestamp={timestamp} />
 }
 
 

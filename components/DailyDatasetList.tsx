@@ -12,7 +12,7 @@ const DailyDatasetList = ({ timestamp }: DailyDatasetListProps) => {
    */
   const { dataWithSplitgraphURLs } = useSplitgraphRepoUrls(data);
 
-  return <DatasetList data={dataWithSplitgraphURLs} error={error} />
+  return <DatasetList data={dataWithSplitgraphURLs} error={error} timestamp={timestamp} />
 }
 
 
