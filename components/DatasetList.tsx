@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useRouter } from 'next/router'
 import Dataset from './Dataset';
 import styles from './Dataset.module.css';
 import spinnerStyles from './Spinner.module.css'
@@ -31,8 +32,11 @@ const rollupData = (rows: Array<DiffResponse>): RolledUpDatasets => {
 interface DatasetListProps {
   data: any;
   error: any;
+  timestamp: string;
 }
-const DatasetList = ({ data, error }: DatasetListProps) => {
+const DatasetList = ({ data, error, timestamp }: DatasetListProps) => {
+  const router = useRouter()
+  const selectedTimeUnit = router.pathname === '/' ? 'week' : router.pathname.split('/')[1] === '[index]' ? 'day' : router.pathname.split('/')[1];
   const rolledUp: RolledUpDatasets = useMemo(() => rollupData(data as any), [data]);
 
   return (
@@ -42,7 +46,9 @@ const DatasetList = ({ data, error }: DatasetListProps) => {
       </div>
       {data &&
         <div>
-          {data.length && <p><em>{data.length} records</em></p>}
+          {data.length} dataset{data.length > 1 ? 's' : ''} added/removed&nbsp;
+          {selectedTimeUnit === 'day' ? `${selectedTimeUnit} of` : `${selectedTimeUnit} starting`}&nbsp;
+          {timestamp?.slice(0, 10)}
         </div>
       }
       <div className={styles.datasetsList}>
