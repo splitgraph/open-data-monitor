@@ -1,4 +1,3 @@
-import type { ChangeEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router'
 import Link from 'next/link'
@@ -12,21 +11,20 @@ interface PickerProps {
 }
 const Picker = ({ data }: PickerProps) => {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false); // improve UX of Picker when an <option> is chosen
+  const [isLoading] = useState(false); // prevent double button clicks + signal activity
   const response = useMemo(() =>
     data ? Object.fromEntries(data.map(({ direction, timestamp }) => [direction, timestamp])) : {},
     [data]);
 
-  const dropdownIndex = router.pathname.split('/')[1] === '[index]' ? '' : router.pathname.split('/')[1];
-  const selectedTimeUnit = router.pathname.split('/')[1] === '[index]' ? 'day' : router.pathname.split('/')[1];
+  const selectedTimeUnit = router.pathname === '/' ? 'week' : router.pathname.split('/')[1] === '[index]' ? 'day' : router.pathname.split('/')[1];
 
   const getPrev = () => {
-    switch (dropdownIndex) {
+    switch (selectedTimeUnit) {
       case 'week':
         return response?.prev_week && response.prev_week.slice(0, 10)
       case 'month':
         return response?.prev_month && response?.prev_month.slice(0, 10);
-      case '':// day - either '/' or '/2022-10-24%20blahblah'
+      case 'day':
         return response?.prev_month && response?.prev_day.slice(0, 10);
       default:
         return ''
@@ -34,12 +32,12 @@ const Picker = ({ data }: PickerProps) => {
   }
 
   const getNext = () => {
-    switch (dropdownIndex) {
+    switch (selectedTimeUnit) {
       case 'week':
         return response?.next_week && response.next_week.slice(0, 10)
       case 'month':
         return response?.next_month && response.next_month.slice(0, 10)
-      case '': // day - either '/' or '/2022-10-24%20blahblah'
+      case 'day':
         return response?.next_day && response.next_day.slice(0, 10)
       default:
         return ''
@@ -51,29 +49,25 @@ const Picker = ({ data }: PickerProps) => {
       // <Link> disallows href attr of undefined. Thus, use empty string
       return ''
     }
-    return dropdownIndex ? `/${dropdownIndex}/${getPrev()}` : getPrev()
+    return selectedTimeUnit === 'day' ? getPrev() : `/${selectedTimeUnit}/${getPrev()}`
   }
 
   const getNextLinkHref = () => {
     if (isLoading || nextDisabled) {
       return ''
     }
-    return dropdownIndex ? `/${dropdownIndex}/${getNext()}` : getNext()
+    return selectedTimeUnit === 'day' ? getNext() : `/${selectedTimeUnit}/${getNext()}`
   }
 
-  const goToday = () => {
-    router.push('/')
-  }
-
-  const prevDisabled = isLoading || dropdownIndex === ''
+  const prevDisabled = isLoading || selectedTimeUnit === 'day'
     ? !(Direction.prev_day in response)
-    : dropdownIndex === 'week'
+    : selectedTimeUnit === 'week'
       ? !(Direction.prev_week in response)
       : !(Direction.prev_month in response)
 
-  const nextDisabled = response === undefined || dropdownIndex === ''
+  const nextDisabled = response === undefined || selectedTimeUnit === 'day'
     ? !(Direction.next_day in response)
-    : dropdownIndex === 'week'
+    : selectedTimeUnit === 'week'
       ? !(Direction.next_week in response)
       : !(Direction.next_month in response)
 
