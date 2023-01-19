@@ -1,4 +1,4 @@
-# SocFeed
+# Open Data Monitor
 
 Ever wanted to know which Socrata datasets are added/removed over time? Now you can.
 
