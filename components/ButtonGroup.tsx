@@ -17,7 +17,6 @@ interface ButtonGroupProps {
 }
 const ButtonGroup = (props: ButtonGroupProps) => {
   const { day, week, month, selected, ...rest } = props;
-  console.log({ day, week, month })
   return (
     <div className={styles.buttonGroup}>
       <Button {...rest}
