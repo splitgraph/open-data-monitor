@@ -23,6 +23,6 @@ export const getUTCTodayTimestamp = () =>
 */
 export const timestampAppendix = ' 00:00:00'
 
-/** Jelper function to extract just id/domain/name from a full DatasetDiff */
+/** Helper function to extract just id/domain/name from a full DatasetDiff */
 export const selectIdNameDomain = (diffData: DiffResponse[] | undefined) =>
   ({ datasets: diffData?.map(({ id, domain, name }) => ({ id, domain, name })) })
