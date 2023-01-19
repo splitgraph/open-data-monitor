@@ -4,7 +4,7 @@ import { seafowlFetcher, latestKnownWeek, picker, weeklyDiff } from '../data/sea
 import { unifiedFetcher, SplitgraphURLBatch } from '../data';
 import { selectIdNameDomain } from '../util';
 import RootLayout from '../layouts/Root'
-import DailyDatasetList from '../components/DailyDatasetList'
+import WeeklyDatasetList from '../components/WeeklyDatasetList'
 import PickerContainer from '../components/PickerContainer'
 
 /** SWR offers SSR support via a "fallback" prop, 
@@ -19,7 +19,7 @@ const Home: NextPage<SSRPageProps> = ({ fallback }) =>
   <SWRConfig value={{ fallback }}>
     <RootLayout>
       <PickerContainer timestamp={fallback[latestKnownWeek]} />
-      <DailyDatasetList timestamp={fallback[latestKnownWeek]} />
+      <WeeklyDatasetList timestamp={fallback[latestKnownWeek]} />
     </RootLayout >
   </SWRConfig>
 
