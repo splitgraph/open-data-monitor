@@ -4,6 +4,8 @@ Ever wanted to know which Socrata datasets are added/removed over time? Now you 
 
 Powered by Splitgraph's regularly updated [Socrata catalog](https://www.splitgraph.com/splitgraph/socrata) and the [DDN](https://www.splitgraph.com/docs/query/ddn) [HTTP API](https://www.splitgraph.com/docs/query/ddn-http).
 
+See more details on the [blog post](https://www.splitgraph.com/blog/opendatamonitor).
+
 ## How to use
 
 Default dates are usually a recent-ish date + a few days before that. Adjust date range as you desire.
