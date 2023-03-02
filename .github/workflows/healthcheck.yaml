@@ -17,7 +17,7 @@ jobs:
         if: ${{ steps.check-next.outcome == 'failure' }}
         run: |
           curl -i -X POST --data-urlencode \
-            "payload={\"text\": \"curl thinks https://open-data-monitor.splitgraph.io/ is down :warning:\nhttps://github.com/splitgraph/open-data-monitor/actions/workflows/healthcheck.yaml\"}" \
+            "payload={\"text\": \"curl thinks https://open-data-monitor.splitgraph.io/ is down :warning:\nhttps://github.com/splitgraph/open-data-monitor/actions/runs/$GITHUB_RUN_ID\"}" \
             $MM_OPENDATAMONITOR_ALERT_URL
         env: 
           MM_OPENDATAMONITOR_ALERT_URL: ${{ secrets.MM_OPENDATAMONITOR_ALERT_URL }}
