@@ -54,7 +54,7 @@ export interface DiffResponse {
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const weeklyDiff = (timestamp: string = '2022-10-31 00:00:00') =>
-  `SELECT d.domain, d.name, is_added, id, d.description, d.id
+  `SELECT d.domain, d.name, is_added, w.id, d.description, d.id
 FROM socrata.weekly_diff w INNER JOIN socrata.all_datasets d
 ON w.id = d.id
 WHERE w.week::text = '${timestamp}'
