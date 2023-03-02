@@ -34,7 +34,7 @@ ORDER BY domain, name, is_added`
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const dailyDiff = (timestamp: string = '2022-11-02 00:00:00') =>
-  `SELECT d.domain, d.name, is_added, id, d.description, d.id
+  `SELECT d.domain, d.name, is_added, dd.id, d.description, d.id
 FROM socrata.daily_diff dd INNER JOIN socrata.all_datasets d
 ON dd.id = d.id
 WHERE dd.day::text = '${timestamp}'
@@ -85,7 +85,7 @@ GROUP BY 1
 ORDER BY 1 ASC`
 
 export const monthlyDiff = (timestamp: string) =>
-  `SELECT month, d.domain, d.name, is_added, id, d.description, d.id
+  `SELECT month, d.domain, d.name, is_added, m.id, d.description, d.id
 FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
 ON m.id = d.id
 WHERE m.month::text = '${timestamp}'
