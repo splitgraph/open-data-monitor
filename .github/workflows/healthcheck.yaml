@@ -20,3 +20,5 @@ jobs:
           curl -i -X POST --data-urlencode \
             -d '{"text": "Chinavirusssss 🤡"}' \
             $MM_OPENDATAMONITOR_ALERT_URL
+        env: 
+          MM_OPENDATAMONITOR_ALERT_URL: ${{ secrets.MM_OPENDATAMONITOR_ALERT_URL }}
