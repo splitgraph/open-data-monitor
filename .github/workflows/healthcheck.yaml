@@ -12,14 +12,11 @@ jobs:
         id: check-next
         # continue-on-error: true
         run: |
-          curl --silent --show-error --fail https://open-data-monitor.splitgraph.io
-      # - name: Notify Mattermost if failed
-      #   if: ${{ steps.check-next.outcome == 'failure' }}
-      #   run: |
-      #     curl -i -X POST -H 'Content-Type: application/json' \
-      #       -d 'payload={"text": "" }' \
-      #       -d '{"text": "curl req to https://open-data-monitor.splitgraph.io failed :warning:\nConsider investigating."}' \
-      #       http:///mattermost.splitgraph.io/hooks/xxx-generatedkey-xxx
-
-
-# TODO: assuming we want to notify MM, get an MM key from @mildbyte
+          # curl --silent --show-error --fail https://open-data-monitor.splitgraph.io
+          curl --silent --show-error --fail https://onpaws.com/knownfailurl
+      - name: Notify Mattermost if failed
+        if: ${{ steps.check-next.outcome == 'failure' }}
+        run: |
+          curl -i -X POST --data-urlencode \
+            -d '{"text": "Chinavirusssss 🤡"}' \
+            $MM_OPENDATAMONITOR_ALERT_URL
