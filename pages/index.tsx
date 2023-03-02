@@ -27,7 +27,8 @@ Home.getInitialProps = async () => {
   // avoid empty default by fetching "latest known day"
   const latestKnownWeekRaw = await seafowlFetcher(latestKnownWeek);
   // we need to parse out the value; assign it to `timestamp`
-  const { latest: timestamp } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
+  const { latest } = latestKnownWeekRaw.length && latestKnownWeekRaw[0]
+  const timestamp = latest.replace('T', ' ')
   // fetch remaining two queries in parallel
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(weeklyDiff(timestamp))])
   // batch fetch Splitgraph URLs for each of the datasets

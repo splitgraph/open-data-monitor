@@ -31,7 +31,7 @@ const MonthPage: NextPage<SSRPageProps> = ({ fallback }) => {
 MonthPage.getInitialProps = async ({ query }) => {
   const latestKnownMonthRaw = await seafowlFetcher(latestKnownMonth);
   const { latest } = latestKnownMonthRaw.length && latestKnownMonthRaw[0]
-  const timestamp = (query.month as string + timestampAppendix) || latest;
+  const timestamp = (query.month as string + timestampAppendix) || latest.replace('T', ' ');
   const responses = await Promise.all([seafowlFetcher(picker(timestamp)), seafowlFetcher(monthlyDiff(timestamp))])
   const datasets = selectIdNameDomain(responses[1])
   const gqlResponse = await unifiedFetcher(SplitgraphURLBatch, datasets)
