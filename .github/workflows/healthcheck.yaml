@@ -12,8 +12,7 @@ jobs:
         id: check-next
         continue-on-error: true
         run: |
-          # curl --silent --show-error --fail https://open-data-monitor.splitgraph.io
-          curl --silent --show-error --fail https://onpaws.com/knownfailurl
+          curl --silent --show-error --fail https://open-data-monitor.splitgraph.io
       - name: Notify Mattermost if failed
         if: ${{ steps.check-next.outcome == 'failure' }}
         run: |
