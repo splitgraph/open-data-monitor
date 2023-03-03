@@ -22,6 +22,11 @@
   border-top: 1px solid #eaeaea;
 }
 
+.header {
+  display: flex;
+  flex-direction: column;
+}
+
 .title a {
   color: #0070f3;
   text-decoration: none;
@@ -159,4 +164,26 @@
   display: flex;
   justify-content: center;
   margin-top: .5rem;
+}
+
+.alert {
+  margin: 7px auto;
+  text-decoration: none;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: rgba(240, 228, 0);
+  border: 1px solid rgb(129, 116, 0);
+  border-radius: 10px;
+  transition-property: all;
+  transition-duration: 150ms;
+  color: rgb(0, 85, 170);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert:hover {
+  color: rgb(50, 0, 188);
+  background-color: rgb(250, 240, 54);
+  border-color: rgb(142, 181, 0);
 }
