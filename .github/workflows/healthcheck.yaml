@@ -2,7 +2,7 @@ name: healthcheck
 on: 
   workflow_dispatch:
   schedule:
-  - cron: "21 0 * * *"
+  - cron: "21 1 * * *"
 
 jobs:
   curl:
