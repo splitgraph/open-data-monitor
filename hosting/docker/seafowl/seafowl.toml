@@ -1,0 +1,32 @@
+[object_store]
+## Using S3:
+## type = "s3"
+## Object Store error: Generic S3 error: Error performing list request: response error "<?xml version="1.0" encoding="UTF-8"?>
+## <Error><Code>AuthorizationHeaderMalformed</Code><Message>The authorization header is malformed; a non-empty region must be provided in the credential.</Message><RequestId>RH2RAD8WXR4NT7NB</RequestId><HostId>Pxb10oSlw0UV+nz2zWD4OTFWk4myHp9toQ0MrmWEuiaO2WC3YCPGO1mX5HhXAQ1D0H+qvuI1OCE=</HostId></Error>", after 0 retries: HTTP status client error (400 Bad Request) for url (https://seafowl-public-test-150355612390.s3-accesspoint.eu-west-2.amazonaws.com/seafowl?list-type=2&prefix=b2125911-75bc-48b0-a82f-4affdb61c26e%2F_delta_log%2F)%
+#access_key_id = "AKIA"
+#secret_access_key = ""
+#endpoint = "https://seafowl-public-test-changeme.s3-accesspoint.eu-west-2.amazonaws.com"
+#endpoint = "https://seafowl.s3.eu-west-2.amazonaws.com"
+
+## Using minio:
+## Object Store error: Operation not yet implemented.%
+
+#access_key_id = "minioadmin"
+#secret_access_key = "minioadmin"
+#endpoint = "http://localhost:9000"
+#bucket = "seafowl"
+
+type = "local"
+data_dir = "/seafowl-data/local-20230331"
+
+[catalog]
+type = "postgres"
+dsn = "postgres://seafowl:@changeme.us-west-2.aws.neon.tech/seafowl-ec2-20230331"
+
+[frontend.http]
+bind_host = "0.0.0.0"
+bind_port = "80"
+read_access = "any"
+write_access = "changeme"
+
+[frontend.postgres]

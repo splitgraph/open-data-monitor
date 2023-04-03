@@ -1,0 +1,14 @@
+version: '3.5'
+services:
+  seafowl:
+    image: splitgraph/seafowl@sha256:00dc8d8c7ea26fcd54aa6ac1afe90884a2abef02a2589744a248c1c71f92046a
+    container_name: seafowl
+    network_mode: host
+    volumes:
+      - type: bind
+        source: ./seafowl.toml
+        target: /etc/seafowl/seafowl.toml
+      - /seafowl-data:/seafowl-data
+    environment:
+      - RUST_LOG=debug
+    restart: 'unless-stopped'
