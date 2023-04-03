@@ -1,0 +1,106 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: opendatamonitor-read
+  namespace: '661574117776'
+  selfLink: /apis/serving.knative.dev/v1/namespaces/661574117776/services/opendatamonitor-read
+  uid: 28b0f555-0dc3-4c89-bea4-f4cbb33f4510
+  resourceVersion: AAX4PTkWDjU
+  generation: 19
+  creationTimestamp: '2023-03-17T05:33:36.963056Z'
+  labels:
+    cloud.googleapis.com/location: us-east1
+  annotations:
+    run.googleapis.com/client-name: cloud-console
+    run.googleapis.com/operation-id: 7e43c4a7-fa40-44b1-8ae8-de9353cbd0bc
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: opendatamonitor-read-00019-gox
+      annotations:
+        run.googleapis.com/client-name: cloud-console
+        run.googleapis.com/execution-environment: gen2
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      serviceAccountName: 661574117776-compute@developer.gserviceaccount.com
+      containers:
+      - image: splitgraph/seafowl@sha256:00dc8d8c7ea26fcd54aa6ac1afe90884a2abef02a2589744a248c1c71f92046a
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: SEAFOWL__CATALOG__TYPE
+          value: postgres
+        - name: SEAFOWL__FRONTEND__HTTP__BIND_HOST
+          value: 0.0.0.0
+        - name: SEAFOWL__FRONTEND__HTTP__BIND_PORT
+          value: '8080'
+        - name: SEAFOWL__FRONTEND__HTTP__READ_ACCESS
+          value: any
+        - name: SEAFOWL__OBJECT_STORE__BUCKET
+          value: seafowl-public-test
+        - name: SEAFOWL__OBJECT_STORE__ENDPOINT
+          value: https://seafowl-public-test.s3.eu-west-2.amazonaws.com
+        - name: SEAFOWL__OBJECT_STORE__REGION
+          value: eu-west-2
+        - name: SEAFOWL__OBJECT_STORE__TYPE
+          value: s3
+        - name: SEAFOWL__FRONTEND__HTTP__WRITE_ACCESS
+          valueFrom:
+            secretKeyRef:
+              key: '1'
+              name: SEAFOWL__FRONTEND__HTTP__WRITE_ACCESS
+        - name: SEAFOWL__CATALOG__DSN
+          valueFrom:
+            secretKeyRef:
+              key: latest
+              name: SEAFOWL__CATALOG__DSN
+        - name: SEAFOWL__OBJECT_STORE__SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: '1'
+              name: SEAFOWL__OBJECT_STORE__SECRET_ACCESS_KEY
+        - name: SEAFOWL__OBJECT_STORE__ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: '1'
+              name: SEAFOWL__OBJECT_STORE__ACCESS_KEY_ID
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        startupProbe:
+          initialDelaySeconds: 10
+          timeoutSeconds: 240
+          periodSeconds: 240
+          failureThreshold: 1
+          tcpSocket:
+            port: 8080
+  traffic:
+  - percent: 100
+    latestRevision: true
+status:
+  observedGeneration: 19
+  conditions:
+  - type: Ready
+    status: 'True'
+    lastTransitionTime: '2023-04-01T02:38:37.882515Z'
+  - type: ConfigurationsReady
+    status: 'True'
+    lastTransitionTime: '2023-04-01T02:38:32.882190Z'
+  - type: RoutesReady
+    status: 'True'
+    lastTransitionTime: '2023-04-01T02:38:37.993525Z'
+  latestReadyRevisionName: opendatamonitor-read-00019-gox
+  latestCreatedRevisionName: opendatamonitor-read-00019-gox
+  traffic:
+  - revisionName: opendatamonitor-read-00019-gox
+    percent: 100
+    latestRevision: true
+  url: https://opendatamonitor-read-xv6m2mycsq-ue.a.run.app
+  address:
+    url: https://opendatamonitor-read-xv6m2mycsq-ue.a.run.app

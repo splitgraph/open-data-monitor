@@ -1,0 +1,79 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: opendatamonitor-write
+  namespace: '661574117776'
+  selfLink: /apis/serving.knative.dev/v1/namespaces/661574117776/services/opendatamonitor-write
+  uid: a9de543a-a1ab-4dde-966b-d15796a90cf9
+  resourceVersion: AAX3FAFNQc0
+  generation: 6
+  creationTimestamp: '2023-03-17T05:35:17.468179Z'
+  labels:
+    cloud.googleapis.com/location: us-east1
+  annotations:
+    run.googleapis.com/client-name: cloud-console
+    run.googleapis.com/operation-id: 220f0c76-51c4-4e11-8146-a1230bc0590c
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: opendatamonitor-write-00006-cex
+      annotations:
+        run.googleapis.com/client-name: cloud-console
+        run.googleapis.com/execution-environment: gen2
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 5
+      timeoutSeconds: 600
+      serviceAccountName: 661574117776-compute@developer.gserviceaccount.com
+      containers:
+      - image: splitgraph/seafowl@sha256:00dc8d8c7ea26fcd54aa6ac1afe90884a2abef02a2589744a248c1c71f92046a
+        ports:
+        - name: http1
+          containerPort: 8080
+        resources:
+          limits:
+            cpu: 4000m
+            memory: 16Gi
+        volumeMounts:
+        - name: secret-3b809931-b4d7-46d8-84d2-398b0fc39e99
+          readOnly: true
+          mountPath: /etc/seafowl
+        startupProbe:
+          timeoutSeconds: 240
+          periodSeconds: 240
+          failureThreshold: 1
+          tcpSocket:
+            port: 8080
+      volumes:
+      - name: secret-3b809931-b4d7-46d8-84d2-398b0fc39e99
+        secret:
+          secretName: neon_and_gce_object_storage
+          items:
+          - key: '4'
+            path: seafowl.toml
+  traffic:
+  - percent: 100
+    latestRevision: true
+status:
+  observedGeneration: 6
+  conditions:
+  - type: Ready
+    status: 'True'
+    lastTransitionTime: '2023-03-17T08:02:56.672382Z'
+  - type: ConfigurationsReady
+    status: 'True'
+    lastTransitionTime: '2023-03-17T08:02:51.326995Z'
+  - type: RoutesReady
+    status: 'True'
+    lastTransitionTime: '2023-03-17T08:02:56.800205Z'
+  latestReadyRevisionName: opendatamonitor-write-00006-cex
+  latestCreatedRevisionName: opendatamonitor-write-00006-cex
+  traffic:
+  - revisionName: opendatamonitor-write-00006-cex
+    percent: 100
+    latestRevision: true
+  url: https://opendatamonitor-write-xv6m2mycsq-ue.a.run.app
+  address:
+    url: https://opendatamonitor-write-xv6m2mycsq-ue.a.run.app
