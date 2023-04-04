@@ -1,7 +1,7 @@
 import { type BareFetcher } from 'swr';
 import { webcrypto } from 'crypto'
-const SEAFOWL_API = 'https://socfeed-data.splitgraph.io/q'
-const SEAFOWL_ROOT = 'https://socfeed-data.splitgraph.io'
+const SEAFOWL_API = 'http://ec2-13-40-18-245.eu-west-2.compute.amazonaws.com/q'
+const SEAFOWL_ROOT = 'http://ec2-13-40-18-245.eu-west-2.compute.amazonaws.com'
 
 /**
 *  Datasets diffs between the specified tags (roughly, "dates")
@@ -228,7 +228,7 @@ export interface AddedRemovedWeek {
   week: string;
 }
 //@ts-ignore TODO figure out where we should import PublicConfiguration from
-export const seafowlFetcherUncached = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
+export const seafowlFetcher = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
   fetch(SEAFOWL_API, {
     method: "POST",
     // TODO: https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api - use GET
@@ -244,11 +244,12 @@ export const seafowlFetcherUncached = (query: string): Partial<PublicConfigurati
 
 /** GET-based Seafowl fetcher
  * If you GET + pass a query hash in, Seafowl plays nice fetch()'s built-in cache semantics
+ * Including the '.csv'hack which signals CloudFlare to use it's own caching
  * 
  * @see https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api
  */
 // @ts-ignore
-export const seafowlFetcher = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
+export const seafowlFetcherCached = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
   const query = sql.trim().replace(/(?:\r\n|\r|\n)/g, " ");
 
   /** Select appropriate crypto module, depending on SSR or CSR (Node.js vs browser)
@@ -270,6 +271,7 @@ export const seafowlFetcher = async (sql: string): Partial<PublicConfiguration<A
     headers: { "X-Seafowl-Query": query }
   }).then(async (response) => {
     const responseText = await response.text();
+    console.log({responseText})
     return responseText ? responseText.trim().split("\n").map(JSON.parse as any) : [];
   }).catch((reason) => {
     console.error(reason)
