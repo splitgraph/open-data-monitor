@@ -17,7 +17,7 @@ const getNamespace = (domain: string, suffix?: string) => {
   let domainParts = domain.split(".")
 
   // Strip common TLDs
-  if (["com", "org", "net"].includes(domainParts[domainParts.length - 1]) {
+  if (["com", "org", "net"].includes(domainParts[domainParts.length - 1])) {
     domainParts.pop()
   }
 
