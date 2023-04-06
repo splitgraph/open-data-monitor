@@ -109,7 +109,7 @@ ORDER BY 1 ASC`
 
 export const picker = (timestamp: string) =>
   `(SELECT
-  day AS timestamp,
+  day::text AS timestamp,
   'prev_day' AS direction
 FROM socrata.daily_diff
   WHERE day < '${timestamp}'::timestamp
@@ -118,7 +118,7 @@ ORDER BY day DESC LIMIT 1)
 UNION ALL
 
 (SELECT
-  day AS timestamp,
+  day::text AS timestamp,
   'next_day' AS direction
 FROM socrata.daily_diff
   WHERE day > '${timestamp}'::timestamp
@@ -127,7 +127,7 @@ ORDER BY day ASC LIMIT 1)
 UNION ALL 
 
 (SELECT
-  day AS timestamp,
+  day::text AS timestamp,
   'equivalent_day' AS direction
 FROM socrata.daily_diff
   WHERE day <= '${timestamp}'::timestamp
@@ -136,7 +136,7 @@ ORDER BY day DESC LIMIT 1)
 UNION ALL
   
   (SELECT
-  week AS timestamp,
+  week::text AS timestamp,
   'prev_week' AS direction
 FROM socrata.weekly_diff
   WHERE week < '${timestamp}'::timestamp
@@ -145,7 +145,7 @@ ORDER BY week DESC LIMIT 1)
 UNION ALL
 
 (SELECT
-  week AS timestamp,
+  week::text AS timestamp,
   'next_week' AS direction
 FROM socrata.weekly_diff
   WHERE week > '${timestamp}'::timestamp
@@ -154,7 +154,7 @@ ORDER BY week ASC LIMIT 1)
 UNION ALL 
 
 (SELECT
-  week AS timestamp,
+  week::text AS timestamp,
   'equivalent_week' AS direction
 FROM socrata.weekly_diff
   WHERE week <= '${timestamp}'::timestamp
@@ -163,7 +163,7 @@ ORDER BY week DESC LIMIT 1)
 UNION ALL 
 
 (SELECT
-  month AS timestamp,
+  month::text AS timestamp,
   'prev_month' AS direction
 FROM socrata.monthly_diff
   WHERE month < '${timestamp}'::timestamp
@@ -172,7 +172,7 @@ ORDER BY month DESC LIMIT 1)
 UNION ALL
 
 (SELECT
-  month AS timestamp,
+  month::text AS timestamp,
   'next_month' AS direction
 FROM socrata.monthly_diff
   WHERE month > '${timestamp}'::timestamp
@@ -181,7 +181,7 @@ ORDER BY month ASC LIMIT 1)
 UNION ALL 
 
 (SELECT
-  month AS timestamp,
+  month::text AS timestamp,
   'equivalent_month' AS direction
 FROM socrata.monthly_diff
   WHERE month <= '${timestamp}'::timestamp
@@ -271,7 +271,6 @@ export const seafowlFetcherCached = async (sql: string): Partial<PublicConfigura
     headers: { "X-Seafowl-Query": query }
   }).then(async (response) => {
     const responseText = await response.text();
-    console.log({responseText})
     return responseText ? responseText.trim().split("\n").map(JSON.parse as any) : [];
   }).catch((reason) => {
     console.error(reason)
