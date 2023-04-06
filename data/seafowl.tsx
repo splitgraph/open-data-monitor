@@ -34,10 +34,10 @@ ORDER BY domain, name, is_added`
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const dailyDiff = (timestamp: string = '2022-11-02 00:00:00') =>
-  `SELECT d.domain, d.name, is_added, dd.id, d.description, d.id
+  `SELECT d.domain, d.name, dd.is_added, dd.id, d.description, d.id
 FROM socrata.daily_diff dd INNER JOIN socrata.all_datasets d
 ON dd.id = d.id
-WHERE dd.day::text = '${timestamp}'
+WHERE dd.day = '${timestamp}'::timestamp
 ORDER BY 1, 3, 2`
 
 export interface DiffResponse {
@@ -54,10 +54,10 @@ export interface DiffResponse {
  * @returns  Array<Dataset>, e.g. [{ domain, name, is_added, id, desc }]
  */
 export const weeklyDiff = (timestamp: string = '2022-10-31 00:00:00') =>
-  `SELECT d.domain, d.name, is_added, w.id, d.description, d.id
+  `SELECT d.domain, d.name, w.is_added, w.id, d.description, d.id
 FROM socrata.weekly_diff w INNER JOIN socrata.all_datasets d
 ON w.id = d.id
-WHERE w.week::text = '${timestamp}'
+WHERE w.week = '${timestamp}'::timestamp
 ORDER BY 1, 3, 2`
 
 
@@ -85,10 +85,10 @@ GROUP BY 1
 ORDER BY 1 ASC`
 
 export const monthlyDiff = (timestamp: string) =>
-  `SELECT month, d.domain, d.name, is_added, m.id, d.description, d.id
+  `SELECT m.month, d.domain, d.name, m.is_added, m.id, d.description, d.id
 FROM socrata.monthly_diff m INNER JOIN socrata.all_datasets d
 ON m.id = d.id
-WHERE m.month::text = '${timestamp}'
+WHERE m.month = '${timestamp}'::timestamp
 ORDER BY 1, 2, 3`
 
 export interface MonthlyDiffResponse extends DiffResponse {
