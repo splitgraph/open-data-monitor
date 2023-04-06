@@ -228,7 +228,7 @@ export interface AddedRemovedWeek {
   week: string;
 }
 //@ts-ignore TODO figure out where we should import PublicConfiguration from
-export const seafowlFetcher = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
+export const seafowlFetcherUncached = (query: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> =>
   fetch(SEAFOWL_API, {
     method: "POST",
     // TODO: https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api - use GET
@@ -249,7 +249,7 @@ export const seafowlFetcher = (query: string): Partial<PublicConfiguration<Added
  * @see https://seafowl.io/docs/guides/querying-cache-cdn#querying-from-the-browser-using-the-fetch-api
  */
 // @ts-ignore
-export const seafowlFetcherCached = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
+export const seafowlFetcher = async (sql: string): Partial<PublicConfiguration<AddedRemovedWeek[], any, BareFetcher<AddedRemovedWeek[]>>> => {
   const query = sql.trim().replace(/(?:\r\n|\r|\n)/g, " ");
 
   /** Select appropriate crypto module, depending on SSR or CSR (Node.js vs browser)
